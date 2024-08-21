@@ -30,11 +30,11 @@
         const info = {};
 
         // Extract album title
-        const titleElement = div.querySelector('.page_charts_section_charts_item_title .ui_name_locale_original');
+        const titleElement = div.querySelector('.page_charts_section_charts_item_title .ui_name_locale_original, .page_charts_section_charts_item_title .ui_name_locale');
         info.title = titleElement ? titleElement.textContent.trim() : 'N/A';
 
         // Extract artist name
-        const artistElement = div.querySelector('.page_charts_section_charts_item_credited_text .ui_name_locale_original');
+        const artistElement = div.querySelector('.page_charts_section_charts_item_credited_text .ui_name_locale_original, .page_charts_section_charts_item_credited_text .ui_name_locale');
         info.artist = artistElement ? artistElement.textContent.trim() : 'N/A';
 
         // Extract release date
