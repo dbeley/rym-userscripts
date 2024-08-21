@@ -217,8 +217,20 @@
         }
     }
 
-    // Run the addButtons function when the DOM is fully loaded
-    window.addEventListener('load', addButtons);
+    // Set up MutationObserver
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                addButtons();
+            }
+        });
+    });
+
+    // Observe changes in the document body
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Add buttons initially if the content is already loaded
+    addButtons();
 
 })();
 
