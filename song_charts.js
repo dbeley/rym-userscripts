@@ -1,24 +1,24 @@
 // ==UserScript==
-// @name         RateYourMusic Album Charts Data Extractor
-// @namespace    http://tampermonkey.net/
-// @version      1.5
-// @description  Extract and download album chart data as CSV or plain text from RateYourMusic charts pages.
+// @name         RateYourMusic Song Charts Data Extractor
+// @namespace    RateYourMusic scripts
+// @version      1.2
+// @description  Extract and download song chart data as CSV or plain text from RateYourMusic charts pages.
 // @author       dbeley
-// @match        https://rateyourmusic.com/charts/top/album/*
-// @match        https://rateyourmusic.com/charts/popular/album/*
-// @match        https://rateyourmusic.com/charts/esoteric/album/*
-// @match        https://rateyourmusic.com/charts/diverse/album/*
+// @match        https://rateyourmusic.com/charts/top/song/*
+// @match        https://rateyourmusic.com/charts/popular/song/*
+// @match        https://rateyourmusic.com/charts/esoteric/song/*
+// @match        https://rateyourmusic.com/charts/diverse/song/*
 // @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // Function to extract relevant information from each album div
+    // Function to extract relevant information from each div
     function extractInfo(div) {
         const info = {};
 
-        // Extract album title
+        // Extract song title
         const titleElement = div.querySelector('.page_charts_section_charts_item_title .ui_name_locale_original');
         info.title = titleElement ? titleElement.textContent.trim() : 'N/A';
 
@@ -30,21 +30,17 @@
         const dateElement = div.querySelector('.page_charts_section_charts_item_title_date_compact span:first-child');
         info.release_date = dateElement ? dateElement.textContent.trim() : 'N/A';
 
-        // Extract genres (primary and secondary)
+        // Extract genre
         const genreElements = div.querySelectorAll('.page_charts_section_charts_item_genres_primary a, .page_charts_section_charts_item_genres_secondary a');
-        info.genres = Array.from(genreElements).map(genre => genre.textContent.trim()).join(', ');
+        info.genre = Array.from(genreElements).map(genre => genre.textContent.trim()).join(', ');
 
         // Extract average rating
         const ratingElement = div.querySelector('.page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_average_num');
         info.average_rating = ratingElement ? ratingElement.textContent.trim() : 'N/A';
 
-        // Extract number of votes
-        const votesElement = div.querySelector('.page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_ratings .abbr');
-        info.number_of_votes = votesElement ? votesElement.textContent.trim() : 'N/A';
-
-        // Extract number of reviews
-        const reviewsElement = div.querySelector('.page_charts_section_charts_item_details_reviews .abbr');
-        info.number_of_reviews = reviewsElement ? reviewsElement.textContent.trim() : 'N/A';
+        // Extract number of ratings
+        const ratingsElement = div.querySelector('.page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_ratings .abbr');
+        info.number_of_ratings = ratingsElement ? ratingsElement.textContent.trim() : 'N/A';
 
         // Extract image URL
         const imageElement = div.querySelector('.page_charts_section_charts_item_image img');
@@ -107,7 +103,7 @@
         console.log("Download CSV button clicked. Starting data extraction...");
 
         // Select all div elements with the relevant class
-        const divElements = document.querySelectorAll('div.page_charts_section_charts_item.object_release');
+        const divElements = document.querySelectorAll('div.page_charts_section_charts_item');
 
         // Initialize an array to store the extracted information
         const extractedData = [];
@@ -126,7 +122,7 @@
         console.log("CSV data prepared. Starting download...");
 
         // Download the CSV file
-        downloadFile(csvData, 'rym_album_charts_data.csv', 'text/csv');
+        downloadFile(csvData, 'rym_charts_data.csv', 'text/csv');
     }
 
     // Function to handle Plain Text download button click
@@ -134,7 +130,7 @@
         console.log("Download Plain Text button clicked. Starting data extraction...");
 
         // Select all div elements with the relevant class
-        const divElements = document.querySelectorAll('div.page_charts_section_charts_item.object_release');
+        const divElements = document.querySelectorAll('div.page_charts_section_charts_item');
 
         // Initialize an array to store the extracted information
         const extractedData = [];
@@ -153,7 +149,7 @@
         console.log("Plain Text data prepared. Starting download...");
 
         // Download the Plain Text file
-        downloadFile(plainTextData, 'rym_album_charts_data.txt', 'text/plain');
+        downloadFile(plainTextData, 'rym_charts_data.txt', 'text/plain');
     }
 
     // Function to create and insert the download buttons
