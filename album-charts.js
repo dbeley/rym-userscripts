@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         RateYourMusic Album Charts Data Extractor
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.5
 // @description  Extract and download album chart data as CSV or plain text from RateYourMusic charts pages.
-// @author       YourName
+// @author       dbeley
 // @match        https://rateyourmusic.com/charts/top/album/*
 // @match        https://rateyourmusic.com/charts/popular/album/*
 // @match        https://rateyourmusic.com/charts/esoteric/album/*
@@ -33,6 +33,22 @@
         // Extract genres (primary and secondary)
         const genreElements = div.querySelectorAll('.page_charts_section_charts_item_genres_primary a, .page_charts_section_charts_item_genres_secondary a');
         info.genres = Array.from(genreElements).map(genre => genre.textContent.trim()).join(', ');
+
+        // Extract average rating
+        const ratingElement = div.querySelector('.page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_average_num');
+        info.average_rating = ratingElement ? ratingElement.textContent.trim() : 'N/A';
+
+        // Extract number of votes
+        const votesElement = div.querySelector('.page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_ratings .abbr');
+        info.number_of_votes = votesElement ? votesElement.textContent.trim() : 'N/A';
+
+        // Extract number of reviews
+        const reviewsElement = div.querySelector('.page_charts_section_charts_item_details_reviews .abbr');
+        info.number_of_reviews = reviewsElement ? reviewsElement.textContent.trim() : 'N/A';
+
+        // Extract image URL
+        const imageElement = div.querySelector('.page_charts_section_charts_item_image img');
+        info.image_url = imageElement ? imageElement.src.trim() : 'N/A';
 
         return info;
     }

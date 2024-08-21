@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         RateYourMusic Charts Data Extractor
+// @name         RateYourMusic Song Charts Data Extractor
 // @namespace    http://tampermonkey.net/
 // @version      1.2
 // @description  Extract and download song chart data as CSV or plain text from RateYourMusic charts pages.
-// @author       YourName
+// @author       dbeley
 // @match        https://rateyourmusic.com/charts/top/song/*
 // @match        https://rateyourmusic.com/charts/popular/song/*
 // @match        https://rateyourmusic.com/charts/esoteric/song/*
@@ -25,6 +25,26 @@
         // Extract artist name
         const artistElement = div.querySelector('.page_charts_section_charts_item_credited_text .ui_name_locale_original');
         info.artist = artistElement ? artistElement.textContent.trim() : 'N/A';
+
+        // Extract release date
+        const dateElement = div.querySelector('.page_charts_section_charts_item_title_date_compact span:first-child');
+        info.release_date = dateElement ? dateElement.textContent.trim() : 'N/A';
+
+        // Extract genre
+        const genreElements = div.querySelectorAll('.page_charts_section_charts_item_genres_primary a, .page_charts_section_charts_item_genres_secondary a');
+        info.genre = Array.from(genreElements).map(genre => genre.textContent.trim()).join(', ');
+
+        // Extract average rating
+        const ratingElement = div.querySelector('.page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_average_num');
+        info.average_rating = ratingElement ? ratingElement.textContent.trim() : 'N/A';
+
+        // Extract number of ratings
+        const ratingsElement = div.querySelector('.page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_ratings .abbr');
+        info.number_of_ratings = ratingsElement ? ratingsElement.textContent.trim() : 'N/A';
+
+        // Extract image URL
+        const imageElement = div.querySelector('.page_charts_section_charts_item_image img');
+        info.image_url = imageElement ? imageElement.src.trim() : 'N/A';
 
         return info;
     }
