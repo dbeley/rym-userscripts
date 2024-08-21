@@ -205,7 +205,7 @@
             textButton.addEventListener('click', handleDownloadPlainTextClick);
 
             buttonContainer.appendChild(csvButton);
-            buttonContainer.appendChild(txtButton);
+            buttonContainer.appendChild(textButton);
             navContainer.appendChild(buttonContainer);
             console.log("Download buttons added to the page.");
         }
