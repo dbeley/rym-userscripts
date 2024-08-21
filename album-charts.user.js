@@ -181,9 +181,11 @@
 
     // Function to create and insert the download buttons
     function addButtons() {
-        const navDiv = document.querySelector('.page_charts_section_charts_nav_view');
-        if (navDiv) {
-            // Create the Download CSV button
+        const navContainer = document.querySelector('.page_charts_section_charts_nav_view');
+        if (navContainer && !navContainer.querySelector('.download-buttons-container')) {
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'download-buttons-container';
+    
             const csvButton = document.createElement('button');
             csvButton.textContent = 'Download CSV';
             csvButton.style.marginLeft = '10px';
@@ -194,9 +196,8 @@
             csvButton.style.borderRadius = '5px';
             csvButton.style.cursor = 'pointer';
             csvButton.addEventListener('click', handleDownloadCSVClick);
-
-            // Create the Download Plain Text button
-            const textButton = document.createElement('button');
+    
+            const txtButton = document.createElement('button');
             textButton.textContent = 'Download Plain Text';
             textButton.style.marginLeft = '10px';
             textButton.style.padding = '5px 10px';
@@ -207,13 +208,10 @@
             textButton.style.cursor = 'pointer';
             textButton.addEventListener('click', handleDownloadPlainTextClick);
 
-            // Add buttons to the navigation div
-            navDiv.appendChild(csvButton);
-            navDiv.appendChild(textButton);
-
+            buttonContainer.appendChild(csvButton);
+            buttonContainer.appendChild(txtButton);
+            navContainer.appendChild(buttonContainer);
             console.log("Download buttons added to the page.");
-        } else {
-            console.log("Navigation div not found. Buttons not added.");
         }
     }
 
