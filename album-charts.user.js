@@ -197,7 +197,7 @@
             csvButton.style.cursor = 'pointer';
             csvButton.addEventListener('click', handleDownloadCSVClick);
     
-            const txtButton = document.createElement('button');
+            const textButton = document.createElement('button');
             textButton.textContent = 'Download Plain Text';
             textButton.style.marginLeft = '10px';
             textButton.style.padding = '5px 10px';
