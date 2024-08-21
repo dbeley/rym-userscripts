@@ -169,7 +169,7 @@
         const timestamp = getTimestamp();
 
         // Generate filename with timestamp
-        const filename = `rym_song_charts_data_${timestamp}.csv`;
+        const filename = `rym_song_charts_data_${timestamp}.txt`;
 
         // Download the text file
         downloadFile(plainTextData, filename, 'text/plain');
