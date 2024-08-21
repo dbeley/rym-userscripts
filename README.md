@@ -8,7 +8,9 @@ Some userscripts for RateYourMusic.
 
 - `album-charts.user.js`: add buttons to download album charts as CSV or plain text
 
-> hint: you can configure RYM charts to display up to 100 elements at once
+You can configure RYM charts to display up to 100 elements at once in the chart settings.
+
+Also in order to load all the images you will have to scroll to the bottom of the page.
 
 ## Installation
 
