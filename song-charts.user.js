@@ -14,6 +14,17 @@
 (function() {
     'use strict';
 
+    function getTimestamp() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+    }
+
     // Function to extract relevant information from each div
     function extractInfo(div) {
         const info = {};
@@ -121,8 +132,14 @@
 
         console.log("CSV data prepared. Starting download...");
 
+        // Generate timestamp
+        const timestamp = getTimestamp();
+
+        // Generate filename with timestamp
+        const filename = `rym_song_charts_data_${timestamp}.csv`;
+
         // Download the CSV file
-        downloadFile(csvData, 'rym_charts_data.csv', 'text/csv');
+        downloadFile(csvData, filename, 'text/csv');
     }
 
     // Function to handle Plain Text download button click
@@ -148,8 +165,14 @@
 
         console.log("Plain Text data prepared. Starting download...");
 
-        // Download the Plain Text file
-        downloadFile(plainTextData, 'rym_charts_data.txt', 'text/plain');
+        // Generate timestamp
+        const timestamp = getTimestamp();
+
+        // Generate filename with timestamp
+        const filename = `rym_song_charts_data_${timestamp}.csv`;
+
+        // Download the text file
+        downloadFile(plainTextData, filename, 'text/plain');
     }
 
     // Function to create and insert the download buttons
