@@ -4,6 +4,7 @@
 // @version      1.5
 // @description  Extract and download album chart data as CSV or plain text from RateYourMusic charts pages.
 // @author       dbeley
+// @match        https://rateyourmusic.com/charts/
 // @match        https://rateyourmusic.com/charts/top/album/*
 // @match        https://rateyourmusic.com/charts/popular/album/*
 // @match        https://rateyourmusic.com/charts/esoteric/album/*
