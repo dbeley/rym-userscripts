@@ -16,9 +16,6 @@
         const logoNameElement = document.querySelector('.logo_name');
         if (logoNameElement) {
             logoNameElement.textContent = 'Ate Your Music'; // Change the logo name text
-            logoNameElement.style.textTransform = 'none'; // Disable text-transform
-            logoNameElement.style.display = 'inline-block'; // Ensure it's inline with the image
-            logoNameElement.style.verticalAlign = 'middle'; // Vertically center with the image
         }
 
         // Remove the existing logo header div and replace it with a new image
@@ -27,24 +24,21 @@
             const parent = logoHeaderElement.parentNode;
             parent.removeChild(logoHeaderElement); // Remove the div
 
+            // Create a new div with the class 'logo_header'
+            const newDiv = document.createElement('div');
+            newDiv.className = 'logo_header';
+
+
             // Create a new img element and add it before the logo name
             const newImg = document.createElement('img');
             newImg.src = 'https://www.svgrepo.com/show/297216/hamburger-burger.svg';
             newImg.alt = 'New Logo';
-            newImg.style.width = '30px'; // Set a smaller width for the image
-            newImg.style.height = 'auto'; // Ensure the aspect ratio is maintained
-            newImg.style.display = 'inline-block'; // Make sure the image is inline with the text
-            newImg.style.verticalAlign = 'middle'; // Vertically center the image with the text
-            newImg.style.float = 'none';
-            parent.insertBefore(newImg, logoNameElement); // Insert the image before the logo name
-        }
 
-        // Ensure the parent element (header) has proper alignment for image and text
-        const headerElement = document.querySelector('.header_logo');
-        if (headerElement) {
-            headerElement.style.display = 'inline-flex'; // Use flexbox to align items
-            headerElement.style.alignItems = 'center'; // Vertically center everything
-            headerElement.style.gap = '8px'; // Add some space between the image and text
+            // Append the image to the new div
+            newDiv.appendChild(newImg);
+
+            // Insert the new div with the image before the logo name
+            parent.insertBefore(newDiv, logoNameElement);
         }
 
     }, false);
