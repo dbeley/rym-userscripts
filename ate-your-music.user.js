@@ -35,7 +35,16 @@
             newImg.style.height = 'auto'; // Ensure the aspect ratio is maintained
             newImg.style.display = 'inline-block'; // Make sure the image is inline with the text
             newImg.style.verticalAlign = 'middle'; // Vertically center the image with the text
+            newImg.style.float = 'none';
             parent.insertBefore(newImg, logoNameElement); // Insert the image before the logo name
+        }
+
+        // Ensure the parent element (header) has proper alignment for image and text
+        const headerElement = document.querySelector('.header_logo');
+        if (headerElement) {
+            headerElement.style.display = 'inline-flex'; // Use flexbox to align items
+            headerElement.style.alignItems = 'center'; // Vertically center everything
+            headerElement.style.gap = '8px'; // Add some space between the image and text
         }
 
     }, false);
