@@ -38,13 +38,6 @@
             parent.insertBefore(newImg, logoNameElement); // Insert the image before the logo name
         }
 
-        // Ensure the parent element (header) has proper alignment for image and text
-        const headerElement = document.querySelector('.header_logo');
-        if (headerElement) {
-            headerElement.style.display = 'flex'; // Use flexbox to align items
-            headerElement.style.alignItems = 'center'; // Vertically center everything
-            headerElement.style.gap = '8px'; // Add some space between the image and text
-        }
     }, false);
 
 
