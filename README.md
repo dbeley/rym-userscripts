@@ -16,6 +16,9 @@ In order to load all the images you will have to scroll to the bottom of the pag
 
 For example if you navigate to the charts of the [top jazz albums](https://rateyourmusic.com/charts/top/album/all-time/g:jazz/) the chart links by decades (`2020s`, `2010s`, etc.) won't contain the genre tags. This userscript fixes that (only genres and artists filters are supported as of now).
 
+![preview](docs/userscript_artist_filter_retained.png)
+![preview](docs/userscript_genre_filter_retained.png)
+
 ## Installation
 
 - Install a userscript addon (I recommend [Violentmonkey](https://violentmonkey.github.io/))
