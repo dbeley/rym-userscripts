@@ -2,11 +2,11 @@
 
 Some userscripts for RateYourMusic.
 
-![preview](docs/userscript_buttons.png)
-
 - `song-charts.user.js`: add buttons to download song charts as CSV or plain text.
 
 - `album-charts.user.js`: add buttons to download album charts as CSV or plain text.
+
+![preview](docs/userscript_buttons.png)
 
 You can configure RYM charts to display up to 100 elements at once in the chart settings.
 

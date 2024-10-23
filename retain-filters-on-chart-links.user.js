@@ -45,6 +45,7 @@
     // Only proceed if we have any suffixes to append
     if (suffixes.length > 0) {
         appendSuffixToLinks(suffixes, '.ui_button.btn_page_charts_common_charts');
+        appendSuffixToLinks(suffixes, '.page_charts_section_scope_item');
     }
 
 })();
