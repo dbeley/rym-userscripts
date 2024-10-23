@@ -4,13 +4,17 @@ Some userscripts for RateYourMusic.
 
 ![preview](docs/userscript_buttons.png)
 
-- `song-charts.user.js`: add buttons to download song charts as CSV or plain text
+- `song-charts.user.js`: add buttons to download song charts as CSV or plain text.
 
-- `album-charts.user.js`: add buttons to download album charts as CSV or plain text
+- `album-charts.user.js`: add buttons to download album charts as CSV or plain text.
 
 You can configure RYM charts to display up to 100 elements at once in the chart settings.
 
 In order to load all the images you will have to scroll to the bottom of the page, otherwise the CSV export will contain some blank images.
+
+- `retain-filters-on-chart-links.user.js`: retain filters on the chart links present in the page.
+
+For example if you navigate to the charts of the [top jazz albums](https://rateyourmusic.com/charts/top/album/all-time/g:jazz/) the chart links by decades (`2020s`, `2010s`, etc.) won't contain the genre tags. This userscript fixes that (only genres and artists filters are supported as of now).
 
 ## Installation
 
@@ -18,7 +22,7 @@ In order to load all the images you will have to scroll to the bottom of the pag
 - Install the userscript you want by clicking on the following links:
   - [song-charts.user.js](https://github.com/dbeley/rym-userscripts/raw/main/song-charts.user.js)
   - [album-charts.user.js](https://github.com/dbeley/rym-userscripts/raw/main/album-charts.user.js)
-
+  - [retain-filters-on-chart-links.user.js](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js)
 
 ## Sample data
 
