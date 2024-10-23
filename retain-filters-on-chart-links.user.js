@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RateYourMusic retain filters on chart links
 // @namespace    RateYourMusic scripts
-// @version      1.0
+// @version      1.1
 // @description  Retain filters on chart links.
 // @author       dbeley
 // @match        https://rateyourmusic.com/charts/*
@@ -45,7 +45,7 @@
     // Only proceed if we have any suffixes to append
     if (suffixes.length > 0) {
         appendSuffixToLinks(suffixes, '.ui_button.btn_page_charts_common_charts');
-        appendSuffixToLinks(suffixes, '.page_charts_section_scope_item');
+        appendSuffixToLinks(suffixes, '.page_charts_section_scope a[href*="/charts/top/album/"], .page_charts_section_scope a[href*="/charts/top/song/"]');
     }
 
 })();
