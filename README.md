@@ -1,16 +1,16 @@
 # rym-userscripts
 
-Some userscripts for RateYourMusic.
+Some rateyourmusic userscripts.
 
-- `song-charts.user.js`: add buttons to download song charts as CSV or plain text.
+- `song-charts.user.js`: add buttons to download song charts in CSV or plain text.
 
-- `album-charts.user.js`: add buttons to download album charts as CSV or plain text.
+- `album-charts.user.js`: add buttons to download album charts in CSV or plain text.
 
 ![preview](docs/userscript_buttons.png)
 
 You can configure RYM charts to display up to 100 elements at once in the chart settings.
 
-In order to load all the images you will have to scroll to the bottom of the page, otherwise the CSV export will contain some blank images.
+In order to load all the images you will have to scroll to the bottom of the page, otherwise the CSV export will contain some blank images URLs.
 
 - `retain-filters-on-chart-links.user.js`: retain filters on the chart links present in the page.
 
@@ -31,14 +31,12 @@ For example if you navigate to the charts of the [top jazz albums](https://ratey
 
 ### Song charts
 
-
 | title | artist | release_date | genre | average_rating | number_of_ratings | image_url |
 | --- | --- | --- | --- | --- | --- | --- |
 | A Day in the Life | The Beatles |	26 May 1967 | Art Rock | 4.74 |	6k | https://e.snmc.io/i/300/s/17e154620068ef6923a4fc7abbdfc3e8/10941490/The%20Beatles%20-%20Sgt_%20Pepper's%20Lonely%20Hearts%20Club%20Band%2C%20Cover%20art.jpeg |
 | Helpless Child | Swans | 22 October 1996 | Post-Rock | 4.74 | 3k | https://e.snmc.io/i/300/s/742b19a60e882643737cdde408788ceb/1868623/Swans%20-%20Soundtracks%20for%20the%20Blind%2C%20Cover%20art.jpeg |
 | Strawberry Fields Forever | The Beatles | 17 February 1967 | Psychedelic Pop | 4.73 | 5k | https://e.snmc.io/i/300/s/22b07b0f5428621d5952e23e7800022d/5770162/The%20Beatles%20-%20Magical%20Mystery%20Tour%2C%20Cover%20art.jpeg |
 | There Is a Light That Never Goes Out | The Smiths | 16 June 1986 | Jangle Pop | 4.72 | 5k | https://e.snmc.io/i/300/s/21bcf64f8478a3bb189c5ebb8f326068/12056415/The%20Smiths%20-%20The%20Queen%20Is%20Dead%2C%20Cover%20art.png |
-
 
 ### Album charts
 
