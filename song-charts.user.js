@@ -71,7 +71,13 @@
         const csvRows = [headers.join(',')];
 
         data.forEach(row => {
-            const values = headers.map(header => `"${row[header]}"`);
+            const values = headers.map(header => {
+                let value = row[header] ? String(row[header]) : '';
+                // Escape double quotes in values by doubling them
+                value = value.replace(/"/g, '""');
+                // Wrap each value in double quotes
+                return `"${value}"`;
+            });
             csvRows.push(values.join(','));
         });
 
