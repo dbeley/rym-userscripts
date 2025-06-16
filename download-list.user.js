@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RateYourMusic List Data Extractor
 // @namespace    RateYourMusic scripts
-// @version      1.1
+// @version      1.2
 // @description  Extract and download list data as CSV or plain text from RateYourMusic list pages.
 // @author       dbeley
 // @match        https://rateyourmusic.com/list/*/*
@@ -23,12 +23,12 @@
     }
 
     // Function to detect list type and extract relevant information
-    function extractInfo(row) {
+    function extractInfo(row, index) {
         const info = {};
 
-        // Extract position/rank number
+        // Extract position/rank number - use index if no number element exists
         const numberElement = row.querySelector('.number');
-        info.position = numberElement ? numberElement.textContent.trim() : 'N/A';
+        info.position = numberElement ? numberElement.textContent.trim() : (index + 1).toString();
 
         // Extract image URL (common to all list types)
         const imageElement = row.querySelector('.list_art img');
@@ -53,6 +53,10 @@
                 `https://rateyourmusic.com${albumElement.getAttribute('href')}` : 'N/A';
             info.artist_url = artistElement && artistElement.getAttribute('href') ? 
                 `https://rateyourmusic.com${artistElement.getAttribute('href')}` : 'N/A';
+            
+            // For music items, set generic fields to N/A
+            info.title = 'N/A';
+            info.description = 'N/A';
         } else {
             // Generic list item
             info.type = 'generic';
@@ -180,11 +184,18 @@
         const extractedData = [];
 
         // Iterate over each row element and extract the information
+        let itemIndex = 0;
         rowElements.forEach(row => {
-            // Skip rows that don't contain actual list items
-            if (row.querySelector('.number') && (row.querySelector('.list_artist') || row.querySelector('.generic_title'))) {
-                const info = extractInfo(row);
+            // Skip mobile description rows and other non-item rows
+            if (row.classList.contains('show-for-small-table-row')) {
+                return;
+            }
+            
+            // Check for list items - either music items or generic items
+            if (row.querySelector('.list_art') && (row.querySelector('.list_artist') || row.querySelector('.generic_title'))) {
+                const info = extractInfo(row, itemIndex);
                 extractedData.push(info);
+                itemIndex++;
             }
         });
 
@@ -217,11 +228,18 @@
         const extractedData = [];
 
         // Iterate over each row element and extract the information
+        let itemIndex = 0;
         rowElements.forEach(row => {
-            // Skip rows that don't contain actual list items
-            if (row.querySelector('.number') && (row.querySelector('.list_artist') || row.querySelector('.generic_title'))) {
-                const info = extractInfo(row);
+            // Skip mobile description rows and other non-item rows
+            if (row.classList.contains('show-for-small-table-row')) {
+                return;
+            }
+            
+            // Check for list items - either music items or generic items
+            if (row.querySelector('.list_art') && (row.querySelector('.list_artist') || row.querySelector('.generic_title'))) {
+                const info = extractInfo(row, itemIndex);
                 extractedData.push(info);
+                itemIndex++;
             }
         });
 
