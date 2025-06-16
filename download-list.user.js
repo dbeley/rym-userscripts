@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RateYourMusic List Data Extractor
 // @namespace    RateYourMusic scripts
-// @version      1.0
+// @version      1.1
 // @description  Extract and download list data as CSV or plain text from RateYourMusic list pages.
 // @author       dbeley
 // @match        https://rateyourmusic.com/list/*/*
@@ -22,7 +22,7 @@
         return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
     }
 
-    // Function to extract relevant information from each list item row
+    // Function to detect list type and extract relevant information
     function extractInfo(row) {
         const info = {};
 
@@ -30,29 +30,61 @@
         const numberElement = row.querySelector('.number');
         info.position = numberElement ? numberElement.textContent.trim() : 'N/A';
 
-        // Extract artist name
-        const artistElement = row.querySelector('.list_artist');
-        info.artist = artistElement ? artistElement.textContent.trim() : 'N/A';
-
-        // Extract album/release title
-        const albumElement = row.querySelector('.list_album');
-        info.album = albumElement ? albumElement.textContent.trim() : 'N/A';
-
-        // Extract release date
-        const dateElement = row.querySelector('.rel_date');
-        info.release_date = dateElement ? dateElement.textContent.trim().replace(/[()]/g, '') : 'N/A';
-
-        // Extract image URL
+        // Extract image URL (common to all list types)
         const imageElement = row.querySelector('.list_art img');
         info.image_url = imageElement ? imageElement.src.trim() : 'N/A';
 
-        // Extract album URL
-        const albumLinkElement = row.querySelector('.list_album');
-        info.album_url = albumLinkElement ? `https://rateyourmusic.com${albumLinkElement.getAttribute('href')}` : 'N/A';
+        // Check if this is a music list item (album/artist)
+        const artistElement = row.querySelector('.list_artist');
+        const albumElement = row.querySelector('.list_album');
+        
+        if (artistElement || albumElement) {
+            // Music list (album/artist)
+            info.type = 'music';
+            info.artist = artistElement ? artistElement.textContent.trim() : 'N/A';
+            info.album = albumElement ? albumElement.textContent.trim() : 'N/A';
 
-        // Extract artist URL
-        const artistLinkElement = row.querySelector('.list_artist');
-        info.artist_url = artistLinkElement ? `https://rateyourmusic.com${artistLinkElement.getAttribute('href')}` : 'N/A';
+            // Extract release date
+            const dateElement = row.querySelector('.rel_date');
+            info.release_date = dateElement ? dateElement.textContent.trim().replace(/[()]/g, '') : 'N/A';
+
+            // Extract URLs
+            info.album_url = albumElement && albumElement.getAttribute('href') ? 
+                `https://rateyourmusic.com${albumElement.getAttribute('href')}` : 'N/A';
+            info.artist_url = artistElement && artistElement.getAttribute('href') ? 
+                `https://rateyourmusic.com${artistElement.getAttribute('href')}` : 'N/A';
+        } else {
+            // Generic list item
+            info.type = 'generic';
+            
+            // Extract title from generic_title
+            const titleElement = row.querySelector('.generic_title .rendered_text');
+            info.title = titleElement ? titleElement.textContent.trim() : 'N/A';
+
+            // Extract description from generic_desc
+            const descElement = row.querySelector('.generic_desc .rendered_text');
+            if (descElement) {
+                // Handle both text and links in description
+                let description = '';
+                if (descElement.querySelector('a')) {
+                    // If there's a link, get the href
+                    const linkElement = descElement.querySelector('a');
+                    description = linkElement.href || linkElement.textContent.trim();
+                } else {
+                    description = descElement.textContent.trim();
+                }
+                info.description = description;
+            } else {
+                info.description = 'N/A';
+            }
+
+            // For generic items, we don't have artist/album/date fields
+            info.artist = 'N/A';
+            info.album = 'N/A';
+            info.release_date = 'N/A';
+            info.album_url = 'N/A';
+            info.artist_url = 'N/A';
+        }
 
         return info;
     }
@@ -88,7 +120,26 @@
             return null;
         }
 
-        return data.map(item => `${item.position}. ${item.artist} - ${item.album} (${item.release_date})`).join('\n');
+        return data.map(item => {
+            if (item.type === 'music') {
+                // Music list format
+                if (item.artist !== 'N/A' && item.album !== 'N/A') {
+                    return `${item.position}. ${item.artist} - ${item.album} (${item.release_date})`;
+                } else if (item.artist !== 'N/A') {
+                    return `${item.position}. ${item.artist} (${item.release_date})`;
+                } else if (item.album !== 'N/A') {
+                    return `${item.position}. ${item.album} (${item.release_date})`;
+                }
+            } else {
+                // Generic list format
+                let result = `${item.position}. ${item.title}`;
+                if (item.description !== 'N/A' && item.description.length > 0) {
+                    result += ` - ${item.description}`;
+                }
+                return result;
+            }
+            return `${item.position}. ${item.title || 'Unknown'}`;
+        }).join('\n');
     }
 
     // Function to download a file
@@ -131,7 +182,7 @@
         // Iterate over each row element and extract the information
         rowElements.forEach(row => {
             // Skip rows that don't contain actual list items
-            if (row.querySelector('.number') && row.querySelector('.list_artist')) {
+            if (row.querySelector('.number') && (row.querySelector('.list_artist') || row.querySelector('.generic_title'))) {
                 const info = extractInfo(row);
                 extractedData.push(info);
             }
@@ -168,7 +219,7 @@
         // Iterate over each row element and extract the information
         rowElements.forEach(row => {
             // Skip rows that don't contain actual list items
-            if (row.querySelector('.number') && row.querySelector('.list_artist')) {
+            if (row.querySelector('.number') && (row.querySelector('.list_artist') || row.querySelector('.generic_title'))) {
                 const info = extractInfo(row);
                 extractedData.push(info);
             }
