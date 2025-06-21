@@ -4,9 +4,9 @@ Some rateyourmusic userscripts.
 
 - `download-list.user.js`: add buttons to download user lists in CSV or plain text.
 
-- `song-charts.user.js`: add buttons to download song charts in CSV or plain text.
+- `download-song-charts.user.js`: add buttons to download song charts in CSV or plain text.
 
-- `album-charts.user.js`: add buttons to download album charts in CSV or plain text.
+- `download-album-charts.user.js`: add buttons to download album charts in CSV or plain text.
 
 ![preview](docs/userscript_buttons.png)
 
@@ -26,8 +26,8 @@ For example if you navigate to the charts of the [top jazz albums](https://ratey
 - Install a userscript addon (I recommend [Violentmonkey](https://violentmonkey.github.io/))
 - Install the userscript you want by clicking on the following links:
   - [download-list.user.js](https://github.com/dbeley/rym-userscripts/raw/main/download-list.user.js)
-  - [song-charts.user.js](https://github.com/dbeley/rym-userscripts/raw/main/song-charts.user.js)
-  - [album-charts.user.js](https://github.com/dbeley/rym-userscripts/raw/main/album-charts.user.js)
+  - [download-song-charts.user.js](https://github.com/dbeley/rym-userscripts/raw/main/download-song-charts.user.js)
+  - [download-album-charts.user.js](https://github.com/dbeley/rym-userscripts/raw/main/download-album-charts.user.js)
   - [retain-filters-on-chart-links.user.js](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js)
 
 ## Sample data
