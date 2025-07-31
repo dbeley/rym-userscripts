@@ -16,7 +16,7 @@ In order to load all the images you will have to scroll to the bottom of the pag
 
 - `retain-filters-on-chart-links.user.js`: retain filters on the chart links present in the page.
 
-For example if you navigate to the charts of the [top jazz albums](https://rateyourmusic.com/charts/top/album/all-time/g:jazz/) the chart links by decades (`2020s`, `2010s`, etc.) won't contain the genre tags. This userscript fixes that (only genres and artists filters are supported as of now).
+For example if you navigate to the charts of the [top jazz albums](https://rateyourmusic.com/charts/top/album/all-time/g:jazz/) the chart links by decades (`2020s`, `2010s`, etc.) won't contain the genre tags. This userscript fixes that and now retains all filters present in the URL.
 
 <a href="docs/userscript_genre_filter_retained.png"><img src="docs/userscript_genre_filter_retained.png" width="500"/></a>
 <a href="docs/userscript_artist_filter_retained.png"><img src="docs/userscript_artist_filter_retained.png" width="500"/></a>
