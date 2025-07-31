@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RateYourMusic retain filters on chart links
 // @namespace    RateYourMusic scripts
-// @version      1.1
+// @version      1.2
 // @description  Retain filters on chart links.
 // @author       dbeley
 // @match        https://rateyourmusic.com/charts/*
@@ -20,10 +20,11 @@
             // Ensure the href ends with a `/` before appending
             href = href.endsWith('/') ? href : `${href}/`;
 
-            // Append all suffixes, ensuring no duplicate "/"
+            // Append all suffixes with a trailing `/`, ensuring they are not duplicated
             suffixes.forEach(suffix => {
-                if (!href.includes(suffix)) { // Avoid appending the same suffix multiple times
-                    href += suffix;
+                const segment = `${suffix}/`;
+                if (!href.includes(segment)) {
+                    href += segment;
                 }
             });
 
@@ -32,20 +33,10 @@
         });
     }
 
-    const url = window.location.href;
-    const genreMatch = url.match(/(g:[^/]+)/);
-    const artistMatch = url.match(/(a:[^/]+)/);
-    const locationMatch = url.match(/(l:[^/]+)/);
-    const descriptorMatch = url.match(/(l:[^/]+)/);
-    const languageMatch = url.match(/(l:[^/]+)/);
-
-    // Collect suffixes found in the URL
-    const suffixes = [];
-    if (genreMatch) suffixes.push(genreMatch[0]);
-    if (artistMatch) suffixes.push(artistMatch[0]);
-    if (locationMatch) suffixes.push(locationMatch[0]);
-    if (descriptorMatch) suffixes.push(descriptorMatch[0]);
-    if (languageMatch) suffixes.push(languageMatch[0]);
+    const url = new URL(window.location.href);
+    const suffixes = url.pathname
+        .split('/')
+        .filter(segment => segment.includes(':'));
 
     // Only proceed if we have any suffixes to append
     if (suffixes.length > 0) {
