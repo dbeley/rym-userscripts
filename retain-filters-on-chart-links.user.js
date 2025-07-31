@@ -32,15 +32,20 @@
         });
     }
 
-    // Extract genre (g:...) and artist (a:...) parts from the current URL
     const url = window.location.href;
     const genreMatch = url.match(/(g:[^/]+)/);
     const artistMatch = url.match(/(a:[^/]+)/);
+    const locationMatch = url.match(/(l:[^/]+)/);
+    const descriptorMatch = url.match(/(l:[^/]+)/);
+    const languageMatch = url.match(/(l:[^/]+)/);
 
     // Collect suffixes found in the URL
     const suffixes = [];
     if (genreMatch) suffixes.push(genreMatch[0]);
     if (artistMatch) suffixes.push(artistMatch[0]);
+    if (locationMatch) suffixes.push(locationMatch[0]);
+    if (descriptorMatch) suffixes.push(descriptorMatch[0]);
+    if (languageMatch) suffixes.push(languageMatch[0]);
 
     // Only proceed if we have any suffixes to append
     if (suffixes.length > 0) {
