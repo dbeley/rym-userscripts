@@ -25,7 +25,7 @@ Helpful userscripts for rateyourmusic.com (RYM).
 
 ### download-song-charts.user.js & download-album-charts.user.js
 
-![preview](docs/userscript_buttons.png)
+![Download songs list button screenshot](docs/userscript_buttons.png)
 
 - Adds CSV and text export buttons to every chart entry.
 - Includes artwork URLs, rating counts, genres, and release metadata.
@@ -38,12 +38,14 @@ Helpful userscripts for rateyourmusic.com (RYM).
 - Search queries append the term `audio` by default so you get studio versions.
 - Opens in a new tab unless you change the script’s configuration.
 
+![Play song in chart button screenshot](docs/userscript_button_play_songs_chart.png)
+
 ### retain-filters-on-chart-links.user.js
 - Ensures links to decades/subcharts keep your current filters (genres, descriptors, regions, etc.).
 - Example: when browsing [top jazz albums](https://rateyourmusic.com/charts/top/album/all-time/g:jazz/), decade shortcuts now keep the `g:jazz` filter intact.
 
-<a href="docs/userscript_genre_filter_retained.png"><img src="docs/userscript_genre_filter_retained.png" width="500"/></a>
-<a href="docs/userscript_artist_filter_retained.png"><img src="docs/userscript_artist_filter_retained.png" width="500"/></a>
+![Genre filter retained screenshot](docs/userscript_genre_filter_retained.png)
+![Artist filter retained screenshot](docs/userscript_artist_filter_retained.png)
 
 ## Sample data
 
