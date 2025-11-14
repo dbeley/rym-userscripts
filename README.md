@@ -12,31 +12,29 @@ Helpful userscripts for rateyourmusic.com (RYM).
 | Script | What it does | Install |
 | --- | --- | --- |
 | `download-list.user.js` | Adds CSV and plain-text download buttons to any user list. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-list.user.js) |
-| `download-song-charts.user.js` | Exports song charts (CSV/plain text) with artwork URLs. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-song-charts.user.js) |
-| `download-album-charts.user.js` | Exports album charts (CSV/plain text) with artwork URLs. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-album-charts.user.js) |
+| `download-song-charts.user.js` | Exports song charts (CSV/plain text). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-song-charts.user.js) |
+| `download-album-charts.user.js` | Exports album charts (CSV/plain text). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-album-charts.user.js) |
 | `play-chart-songs.user.js` | Adds a play button that opens the first YouTube video for each chart entry. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/play-chart-songs.user.js) |
 | `retain-filters-on-chart-links.user.js` | Keeps your current genre/region filters when navigating chart links. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js) |
 
 ## Script details
 
 ### download-list.user.js
-- Adds buttons beside each RYM list so you can quickly export to CSV or copy a plain-text list.
+- Adds buttons beside each RYM list to export it to CSV or plain-text list.
 - Preserves ordering, list item titles, artists, release info, and notes where available.
 
 ### download-song-charts.user.js & download-album-charts.user.js
 
 ![Download songs list button screenshot](docs/userscript_buttons.png)
 
-- Adds CSV and text export buttons to every chart entry.
+- Adds CSV and text export buttons above the chart.
 - Includes artwork URLs, rating counts, genres, and release metadata.
 - Tip: set RYM chart settings to show 100 rows per page to minimize paging.
-- Scroll to the bottom once so lazy-loaded artwork URLs populate before exporting, otherwise you may see blank image fields.
+- Scroll to the bottom once to load the album covers before exporting, otherwise you may see blank image fields.
 
 ### play-chart-songs.user.js
 - Adds a `▶ Play` button to each song in a chart.
-- Opens the first YouTube result automatically (falls back to the search results page if parsing fails).
-- Search queries append the term `audio` by default so you get studio versions.
-- Opens in a new tab unless you change the script’s configuration.
+- Opens the first YouTube result automatically in a new tab.
 
 ![Play song in chart button screenshot](docs/userscript_button_play_songs_chart.png)
 
