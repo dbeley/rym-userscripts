@@ -1,34 +1,51 @@
 # rym-userscripts
 
-Some rateyourmusic userscripts.
+Helpful userscripts for rateyourmusic.com (RYM).
 
-- `download-list.user.js`: add buttons to download user lists in CSV or plain text.
+## Getting started
 
-- `download-song-charts.user.js`: add buttons to download song charts in CSV or plain text.
+1. Install a userscript manager (e.g., [Violentmonkey](https://violentmonkey.github.io/), Tampermonkey, or Greasemonkey).
+2. Click any **Install** link below; your manager will prompt you to confirm.
 
-- `download-album-charts.user.js`: add buttons to download album charts in CSV or plain text.
+## Scripts at a glance
 
-![preview](docs/userscript_buttons.png)
+| Script | What it does | Install |
+| --- | --- | --- |
+| `download-list.user.js` | Adds CSV and plain-text download buttons to any user list. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-list.user.js) |
+| `download-song-charts.user.js` | Exports song charts (CSV/plain text) with artwork URLs. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-song-charts.user.js) |
+| `download-album-charts.user.js` | Exports album charts (CSV/plain text) with artwork URLs. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-album-charts.user.js) |
+| `play-chart-songs.user.js` | Adds a play button that opens the first YouTube video for each chart entry. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/play-chart-songs.user.js) |
+| `retain-filters-on-chart-links.user.js` | Keeps your current genre/region filters when navigating chart links. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js) |
 
-You can configure RYM charts to display up to 100 elements at once in the chart settings.
+## Script details
 
-In order to load all the images you will have to scroll to the bottom of the page, otherwise the CSV export will contain some blank images URLs.
+### download-list.user.js
+- Adds buttons beside each RYM list so you can quickly export to CSV or copy a plain-text list.
+- Preserves ordering, list item titles, artists, release info, and notes where available.
 
-- `retain-filters-on-chart-links.user.js`: retain filters on the chart links present in the page.
+### download-song-charts.user.js & download-album-charts.user.js
 
-For example if you navigate to the charts of the [top jazz albums](https://rateyourmusic.com/charts/top/album/all-time/g:jazz/) the chart links by decades (`2020s`, `2010s`, etc.) won't contain the genre tags. This userscript fixes that and now retains all filters present in the URL.
+![Download songs list button screenshot](docs/userscript_buttons.png)
 
-<a href="docs/userscript_genre_filter_retained.png"><img src="docs/userscript_genre_filter_retained.png" width="500"/></a>
-<a href="docs/userscript_artist_filter_retained.png"><img src="docs/userscript_artist_filter_retained.png" width="500"/></a>
+- Adds CSV and text export buttons to every chart entry.
+- Includes artwork URLs, rating counts, genres, and release metadata.
+- Tip: set RYM chart settings to show 100 rows per page to minimize paging.
+- Scroll to the bottom once so lazy-loaded artwork URLs populate before exporting, otherwise you may see blank image fields.
 
-## Installation
+### play-chart-songs.user.js
+- Adds a `▶ Play` button to each song in a chart.
+- Opens the first YouTube result automatically (falls back to the search results page if parsing fails).
+- Search queries append the term `audio` by default so you get studio versions.
+- Opens in a new tab unless you change the script’s configuration.
 
-- Install a userscript addon (I recommend [Violentmonkey](https://violentmonkey.github.io/))
-- Install the userscript you want by clicking on the following links:
-  - [download-list.user.js](https://github.com/dbeley/rym-userscripts/raw/main/download-list.user.js)
-  - [download-song-charts.user.js](https://github.com/dbeley/rym-userscripts/raw/main/download-song-charts.user.js)
-  - [download-album-charts.user.js](https://github.com/dbeley/rym-userscripts/raw/main/download-album-charts.user.js)
-  - [retain-filters-on-chart-links.user.js](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js)
+![Play song in chart button screenshot](docs/userscript_button_play_songs_chart.png)
+
+### retain-filters-on-chart-links.user.js
+- Ensures links to decades/subcharts keep your current filters (genres, descriptors, regions, etc.).
+- Example: when browsing [top jazz albums](https://rateyourmusic.com/charts/top/album/all-time/g:jazz/), decade shortcuts now keep the `g:jazz` filter intact.
+
+![Genre filter retained screenshot](docs/userscript_genre_filter_retained.png)
+![Artist filter retained screenshot](docs/userscript_artist_filter_retained.png)
 
 ## Sample data
 
@@ -36,7 +53,7 @@ For example if you navigate to the charts of the [top jazz albums](https://ratey
 
 | title | artist | release_date | genre | average_rating | number_of_ratings | image_url |
 | --- | --- | --- | --- | --- | --- | --- |
-| A Day in the Life | The Beatles |	26 May 1967 | Art Rock | 4.74 |	6k | https://e.snmc.io/i/300/s/17e154620068ef6923a4fc7abbdfc3e8/10941490/The%20Beatles%20-%20Sgt_%20Pepper's%20Lonely%20Hearts%20Club%20Band%2C%20Cover%20art.jpeg |
+| A Day in the Life | The Beatles | 26 May 1967 | Art Rock | 4.74 | 6k | https://e.snmc.io/i/300/s/17e154620068ef6923a4fc7abbdfc3e8/10941490/The%20Beatles%20-%20Sgt_%20Pepper's%20Lonely%20Hearts%20Club%20Band%2C%20Cover%20art.jpeg |
 | Helpless Child | Swans | 22 October 1996 | Post-Rock | 4.74 | 3k | https://e.snmc.io/i/300/s/742b19a60e882643737cdde408788ceb/1868623/Swans%20-%20Soundtracks%20for%20the%20Blind%2C%20Cover%20art.jpeg |
 | Strawberry Fields Forever | The Beatles | 17 February 1967 | Psychedelic Pop | 4.73 | 5k | https://e.snmc.io/i/300/s/22b07b0f5428621d5952e23e7800022d/5770162/The%20Beatles%20-%20Magical%20Mystery%20Tour%2C%20Cover%20art.jpeg |
 | There Is a Light That Never Goes Out | The Smiths | 16 June 1986 | Jangle Pop | 4.72 | 5k | https://e.snmc.io/i/300/s/21bcf64f8478a3bb189c5ebb8f326068/12056415/The%20Smiths%20-%20The%20Queen%20Is%20Dead%2C%20Cover%20art.png |
