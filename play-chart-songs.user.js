@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RateYourMusic Chart Song Player
 // @namespace    https://github.com/dbeley/rym-userscripts
-// @version      1.2.0
+// @version      1.2.1
 // @description  Adds a play button to each RYM song chart entry and opens a YouTube search for the song.
 // @author       dbeley
 // @match        https://rateyourmusic.com/charts/top/song/*
@@ -128,16 +128,32 @@
 
     async function handlePlayClick(song, button) {
         setButtonBusy(button, true);
+        const query = buildYouTubeQuery(song);
+        const searchUrl = buildYouTubeSearchUrl(query);
+        // Pre-open the tab synchronously so popup blockers keep the user gesture alive.
+        const shouldPreOpen = CONFIG.youtube.autoPlayFirstResult && CONFIG.youtube.openInNewTab;
+        const preOpenedWindow = shouldPreOpen ? window.open('about:blank', '_blank', 'noopener') : null;
         try {
-            const query = buildYouTubeQuery(song);
-            const searchUrl = buildYouTubeSearchUrl(query);
             const directVideoUrl = CONFIG.youtube.autoPlayFirstResult
                 ? await fetchTopYouTubeResult(searchUrl)
                 : null;
             const targetUrl = directVideoUrl || searchUrl;
-            window.open(targetUrl, CONFIG.youtube.openInNewTab ? '_blank' : '_self', 'noopener');
+            openTargetUrl(targetUrl, preOpenedWindow);
         } finally {
             setButtonBusy(button, false);
+        }
+    }
+
+    function openTargetUrl(targetUrl, preOpenedWindow) {
+        if (preOpenedWindow && !preOpenedWindow.closed) {
+            preOpenedWindow.location.replace(targetUrl);
+            return;
+        }
+
+        if (CONFIG.youtube.openInNewTab) {
+            window.open(targetUrl, '_blank', 'noopener');
+        } else {
+            window.location.assign(targetUrl);
         }
     }
 
