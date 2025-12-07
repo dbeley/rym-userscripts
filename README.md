@@ -50,18 +50,24 @@ Helpful userscripts for rateyourmusic.com (RYM).
 
 ### rateyourmusic-csv-tracker.user.js
 - Each release page you open is added/updated in a local dataset (stored via your userscript manager).
+- **Now also works on chart pages** - automatically captures partial data for all releases visible on album/release charts.
 - Menu commands: `Set CSV output file` for auto-saves (Only compatible with chromium-based web browsers) or `Download CSV once` for a one-off export (manual download, works in Firefox).
 - Captures title, artist, release date, type, rank, ratings/reviews, primary/secondary genres, descriptors, languages, description, cover image URL, page URL, and timestamps.
+- When browsing charts, partial data (name, artist, ratings, genres) is captured; visiting individual pages provides complete data while preserving chart updates for dynamic fields (ratings, review counts).
 
 ### rateyourmusic-film-csv-tracker.user.js
 - Each film page you open is added/updated in a local dataset (stored via your userscript manager).
+- **Now also works on chart pages** - automatically captures partial data for all films visible on film charts.
 - Menu commands mirror the music tracker: `Set CSV output file` (chromium-based browsers) and `Download CSV once` (manual download, works in Firefox).
 - Captures title/alternate title, release date, duration, genres, languages, regions, directors, writers, actors, content rating, ratings/reviews, cover image URL, description, page URL, and timestamps.
+- When browsing charts, partial data (name, ratings, genres) is captured; visiting individual pages provides complete data while preserving chart updates for dynamic fields (ratings, review counts).
 
 ### glitchwave-csv-tracker.user.js
 - Same workflow as the RYM tracker but for game pages on Glitchwave.
+- **Now also works on chart pages** - automatically captures partial data for all games visible on game charts.
 - Menu commands: `Set CSV output file` for auto-saves (Only compatible with chromium-based web browsers) or `Download CSV once` for a one-off export (manual download, works in Firefox).
 - Captures title, release date, platforms/OS, genres, ratings/reviews, cover image URL, description, page URL, and timestamps.
+- When browsing charts, partial data (name, release date, ratings, genres) is captured; visiting individual pages provides complete data while preserving chart updates for dynamic fields (ratings, review counts).
 
 ## Sample data
 
