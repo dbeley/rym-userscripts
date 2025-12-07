@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         RateYourMusic Film CSV Tracker
 // @namespace    https://github.com/dbeley/rym-userscripts
-// @version      1.0.0
+// @version      1.1.0
 // @description  Capture film metadata on RateYourMusic pages and keep a CSV in sync (auto-save or manual download).
 // @author       dbeley
 // @match        https://rateyourmusic.com/film/*
+// @match        https://rateyourmusic.com/charts/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
@@ -29,6 +30,22 @@
   main().catch(console.error);
 
   async function main() {
+    // Check if we're on a chart page
+    if (window.location.pathname.includes('/charts/')) {
+      const records = extractChartRecords();
+      if (records.length > 0) {
+        for (const record of records) {
+          await upsertRecord(record);
+        }
+        console.info(
+          `[rateyourmusic-film-csv] Recorded ${records.length} films from chart page`
+        );
+        await writeCsvToDisk();
+      }
+      return;
+    }
+
+    // Otherwise, extract from film page
     const record = extractFilmRecord();
     if (!record) return;
 
@@ -128,6 +145,90 @@
     };
   }
 
+  function extractChartRecords() {
+    const chartItems = document.querySelectorAll('.page_charts_section_charts_item.object_film');
+    const records = [];
+
+    chartItems.forEach((item) => {
+      const link = item.querySelector('.page_charts_section_charts_item_link.film');
+      if (!link) return;
+
+      const url = new URL(link.href, location.href).href;
+      const slug = new URL(url).pathname.split('/').filter(Boolean).pop();
+      if (!slug) return;
+
+      // Extract name (and alt title if present)
+      const nameLocaleNode = link.querySelector('.ui_name_locale');
+      let name = "";
+      let altTitle = "";
+      if (nameLocaleNode) {
+        const langNode = nameLocaleNode.querySelector('.ui_name_locale_language');
+        const origNode = nameLocaleNode.querySelector('.ui_name_locale_original');
+        name = langNode ? langNode.textContent.trim() : (origNode ? origNode.textContent.trim() : link.textContent.trim());
+        if (langNode && origNode && langNode.textContent !== origNode.textContent) {
+          altTitle = origNode.textContent.trim();
+        }
+      } else {
+        name = link.textContent.trim();
+      }
+
+      // Extract release date
+      const dateNode = item.querySelector('.page_charts_section_charts_item_date span');
+      const releaseDate = dateNode ? dateNode.textContent.trim() : "";
+
+      // Extract rating info
+      const ratingNode = item.querySelector('.page_charts_section_charts_item_details_average_num');
+      const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
+
+      const ratingCountNode = item.querySelector('.page_charts_section_charts_item_details_ratings .abbr');
+      const ratingCount = ratingCountNode ? ratingCountNode.textContent.trim() : "";
+
+      const reviewCountNode = item.querySelector('.page_charts_section_charts_item_details_reviews .abbr');
+      const reviewCount = reviewCountNode ? reviewCountNode.textContent.trim() : "";
+
+      // Extract genres
+      const primaryGenres = extractList(
+        item.querySelectorAll('.page_charts_section_charts_item_genres_primary a.genre')
+      );
+      const secondaryGenres = extractList(
+        item.querySelectorAll('.page_charts_section_charts_item_genres_secondary a.genre')
+      );
+
+      // Extract image
+      const imgNode = item.querySelector('.page_charts_section_charts_item_image img');
+      const image = imgNode ? imgNode.src : "";
+
+      const now = new Date().toISOString();
+
+      records.push({
+        slug,
+        name,
+        altTitle,
+        directors: "", // Not available on chart items
+        cast: "", // Not available on chart items
+        releaseDate,
+        runtime: "", // Not available on chart items
+        rank: "", // Not available on chart items
+        ratingValue,
+        maxRating: "", // Not available on chart items
+        ratingCount,
+        primaryGenres,
+        secondaryGenres,
+        descriptors: "", // Not available on chart items
+        languages: "", // Not available on chart items
+        studios: "", // Not available on chart items
+        productionCompanies: "", // Not available on chart items
+        image,
+        description: "", // Not available on chart items
+        url,
+        updatedAt: now,
+        isPartial: true, // Mark as partial data
+      });
+    });
+
+    return records;
+  }
+
   function collectFilmInfo() {
     const rows = document.querySelectorAll(".film_info tr, .film_infox tr");
     const map = {};
@@ -155,11 +256,35 @@
   async function upsertRecord(record) {
     const records = await loadRecords();
     const existing = records[record.slug] || {};
-    records[record.slug] = {
-      ...existing,
-      ...record,
-      firstSeen: existing.firstSeen || record.updatedAt,
-    };
+    
+    // If the new record is partial, only update fields that have values
+    // and preserve full data if it exists
+    if (record.isPartial && !existing.isPartial) {
+      // Merge partial data into full data, keeping full data when available
+      records[record.slug] = {
+        ...existing,
+        // Only update these fields from partial data if they're not empty
+        ...(record.name && { name: record.name }),
+        ...(record.altTitle && { altTitle: record.altTitle }),
+        ...(record.releaseDate && { releaseDate: record.releaseDate }),
+        ...(record.ratingValue && { ratingValue: record.ratingValue }),
+        ...(record.ratingCount && { ratingCount: record.ratingCount }),
+        ...(record.primaryGenres && { primaryGenres: record.primaryGenres }),
+        ...(record.secondaryGenres && { secondaryGenres: record.secondaryGenres }),
+        ...(record.image && { image: record.image }),
+        url: record.url,
+        updatedAt: record.updatedAt,
+        firstSeen: existing.firstSeen || record.updatedAt,
+      };
+    } else {
+      // Full data or both partial - do normal merge
+      records[record.slug] = {
+        ...existing,
+        ...record,
+        firstSeen: existing.firstSeen || record.updatedAt,
+      };
+    }
+    
     await saveRecords(records);
   }
 
