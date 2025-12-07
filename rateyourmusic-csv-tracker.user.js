@@ -102,8 +102,9 @@
     const url =
       release.querySelector('meta[itemprop="url"]')?.content ||
       location.href;
+    const fullUrl = new URL(url, location.href).href;
     const slug =
-      new URL(url, location.href)
+      new URL(fullUrl)
         .pathname.split("/")
         .filter(Boolean)
         .pop() || "other";
@@ -126,7 +127,7 @@
       languages,
       description,
       image,
-      url,
+      url: fullUrl,
       updatedAt: now,
     };
   }
@@ -261,6 +262,7 @@
       // Merge partial data into full data, keeping full data when available
       records[record.slug] = {
         ...existing,
+        slug: record.slug, // Ensure slug is always set
         // Only update these fields from partial data if they're not empty
         ...(record.name && { name: record.name }),
         ...(record.artist && { artist: record.artist }),

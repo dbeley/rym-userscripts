@@ -113,9 +113,10 @@
       film.querySelector("meta[itemprop=image]")?.content ||
       "";
 
-    const url = film.querySelector('meta[itemprop="url"]')?.content || location.href;
+    const urlFromMeta = film.querySelector('meta[itemprop="url"]')?.content || location.href;
+    const url = new URL(urlFromMeta, location.href).href;
     const slug =
-      new URL(url, location.href)
+      new URL(url)
         .pathname.split("/")
         .filter(Boolean)
         .pop() || "other";
@@ -266,6 +267,7 @@
       // Merge partial data into full data, keeping full data when available
       records[record.slug] = {
         ...existing,
+        slug: record.slug, // Ensure slug is always set
         // Only update these fields from partial data if they're not empty
         ...(record.name && { name: record.name }),
         ...(record.altTitle && { altTitle: record.altTitle }),

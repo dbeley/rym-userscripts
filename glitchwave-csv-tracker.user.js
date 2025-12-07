@@ -78,10 +78,11 @@
 
   function buildRecord(json) {
     const aggregate = json.aggregateRating || {};
-    const url = json.url || location.href;
+    const urlFromJson = json.url || location.href;
+    const url = new URL(urlFromJson, location.href).href;
     const slug =
       (json["@id"] && json["@id"].split("/").filter(Boolean).pop()) ||
-      new URL(url, location.href).pathname.split("/").filter(Boolean).pop();
+      new URL(url).pathname.split("/").filter(Boolean).pop();
     const now = new Date().toISOString();
 
     return {
@@ -188,6 +189,7 @@
       // Merge partial data into full data, keeping full data when available
       records[record.slug] = {
         ...existing,
+        slug: record.slug, // Ensure slug is always set
         // Only update these fields from partial data if they're not empty
         ...(record.name && { name: record.name }),
         ...(record.releaseDate && { releaseDate: record.releaseDate }),
