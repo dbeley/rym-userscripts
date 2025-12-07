@@ -17,6 +17,7 @@ Helpful userscripts for rateyourmusic.com (RYM).
 | `play-chart-songs.user.js` | Adds a play button that opens the first YouTube video for each chart entry. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/play-chart-songs.user.js) |
 | `retain-filters-on-chart-links.user.js` | Keeps your current genre/region filters when navigating chart links. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js) |
 | `rateyourmusic-csv-tracker.user.js` | Logs every RYM release page you open into a local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-csv-tracker.user.js) |
+| `rateyourmusic-film-csv-tracker.user.js` | Logs every RYM film page you open into a separate local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-film-csv-tracker.user.js) |
 | `glitchwave-csv-tracker.user.js` | Logs every Glitchwave game page you open into a local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/glitchwave-csv-tracker.user.js) |
 
 ## Script details
@@ -51,6 +52,11 @@ Helpful userscripts for rateyourmusic.com (RYM).
 - Each release page you open is added/updated in a local dataset (stored via your userscript manager).
 - Menu commands: `Set CSV output file` for auto-saves (Only compatible with chromium-based web browsers) or `Download CSV once` for a one-off export (manual download, works in Firefox).
 - Captures title, artist, release date, type, rank, ratings/reviews, primary/secondary genres, descriptors, languages, description, cover image URL, page URL, and timestamps.
+
+### rateyourmusic-film-csv-tracker.user.js
+- Each film page you open is added/updated in a local dataset (stored via your userscript manager).
+- Menu commands mirror the music tracker: `Set CSV output file` (chromium-based browsers) and `Download CSV once` (manual download, works in Firefox).
+- Captures title/alternate title, release date, duration, genres, languages, regions, directors, writers, actors, content rating, ratings/reviews, cover image URL, description, page URL, and timestamps.
 
 ### glitchwave-csv-tracker.user.js
 - Same workflow as the RYM tracker but for game pages on Glitchwave.
