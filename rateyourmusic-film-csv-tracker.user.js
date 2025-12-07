@@ -288,8 +288,8 @@
         ...record,
         firstSeen: existing.firstSeen || record.updatedAt,
       };
-      // If incoming record is not partial (isPartial is undefined), remove the flag
-      if (!record.isPartial) {
+      // If incoming record doesn't have isPartial property, remove the flag
+      if (record.isPartial === undefined) {
         delete merged.isPartial;
       }
       records[record.slug] = merged;
