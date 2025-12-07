@@ -69,6 +69,7 @@
     const agg = film.querySelector('[itemprop="aggregateRating"]');
     const ratingValue = agg?.querySelector('meta[itemprop="ratingValue"]')?.content;
     const ratingCount = agg?.querySelector('meta[itemprop="ratingCount"]')?.content;
+    const reviewCount = agg?.querySelector('meta[itemprop="reviewCount"]')?.content;
     const maxRating = agg?.querySelector('meta[itemprop="bestRating"]')?.content;
 
     const titleNode = document.querySelector(".film_title h1");
@@ -132,6 +133,7 @@
       ratingValue: ratingValue ?? "",
       maxRating: maxRating ?? "",
       ratingCount: ratingCount ?? "",
+      reviewCount: reviewCount ?? "",
       primaryGenres,
       secondaryGenres,
       descriptors,
