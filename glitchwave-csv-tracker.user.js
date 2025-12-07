@@ -145,7 +145,9 @@
       const imageDiv = container.querySelector('.chart_card_image');
       let image = "";
       if (imageDiv) {
-        const bgUrl = imageDiv.style.backgroundImage || imageDiv.getAttribute('data-delayloadurl2x') || imageDiv.getAttribute('data-delayloadurl');
+        const bgUrl = imageDiv.style.backgroundImage ||
+                      imageDiv.getAttribute('data-delayloadurl2x') ||
+                      imageDiv.getAttribute('data-delayloadurl');
         if (bgUrl) {
           // Extract URL from url('...') or just use the value
           const match = bgUrl.match(/url\(['"]?([^'"]+)['"]?\)/);
@@ -194,7 +196,8 @@
         ...(record.reviewCount && { reviewCount: record.reviewCount }),
         ...(record.genres && { genres: record.genres }),
         ...(record.image && { image: record.image }),
-        url: record.url,
+        // Update URL only if it's different
+        ...(record.url && record.url !== existing.url && { url: record.url }),
         updatedAt: record.updatedAt,
         firstSeen: existing.firstSeen || record.updatedAt,
       };

@@ -212,6 +212,7 @@
         ratingValue,
         maxRating: "", // Not available on chart items
         ratingCount,
+        reviewCount,
         primaryGenres,
         secondaryGenres,
         descriptors: "", // Not available on chart items
@@ -269,10 +270,12 @@
         ...(record.releaseDate && { releaseDate: record.releaseDate }),
         ...(record.ratingValue && { ratingValue: record.ratingValue }),
         ...(record.ratingCount && { ratingCount: record.ratingCount }),
+        ...(record.reviewCount && { reviewCount: record.reviewCount }),
         ...(record.primaryGenres && { primaryGenres: record.primaryGenres }),
         ...(record.secondaryGenres && { secondaryGenres: record.secondaryGenres }),
         ...(record.image && { image: record.image }),
-        url: record.url,
+        // Update URL only if it's different
+        ...(record.url && record.url !== existing.url && { url: record.url }),
         updatedAt: record.updatedAt,
         firstSeen: existing.firstSeen || record.updatedAt,
       };

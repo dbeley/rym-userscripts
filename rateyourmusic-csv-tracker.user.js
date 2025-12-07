@@ -273,7 +273,8 @@
         ...(record.secondaryGenres && { secondaryGenres: record.secondaryGenres }),
         ...(record.descriptors && { descriptors: record.descriptors }),
         ...(record.image && { image: record.image }),
-        url: record.url,
+        // Update URL only if it's different
+        ...(record.url && record.url !== existing.url && { url: record.url }),
         updatedAt: record.updatedAt,
         firstSeen: existing.firstSeen || record.updatedAt,
       };
