@@ -29,7 +29,7 @@
   main().catch(console.error);
 
   async function main() {
-    const record = extractMovieRecord();
+    const record = extractFilmRecord();
     if (!record) return;
 
     await upsertRecord(record);
@@ -39,327 +39,117 @@
     await writeCsvToDisk();
   }
 
-  function extractMovieRecord() {
-    const json = findMovieJsonLd();
-    if (json) {
-      return buildRecordFromJson(json);
-    }
-
-    const microdata = findMovieMicrodata();
-    if (microdata) {
-      return buildRecordFromDom(microdata);
-    }
-
-    console.warn("[rateyourmusic-film-csv] No Movie JSON-LD block found.");
-    return null;
-  }
-
-  function findMovieJsonLd() {
-    const scriptNodes = Array.from(
-      document.querySelectorAll('script[type="application/ld+json"]')
+  function extractFilmRecord() {
+    const film = document.querySelector(
+      '.release_page[itemtype="http://schema.org/Movie"]'
     );
-
-    for (const node of scriptNodes) {
-      try {
-        const parsed = JSON.parse(node.textContent);
-        const candidates = [];
-
-        if (Array.isArray(parsed)) {
-          candidates.push(...parsed);
-        } else if (parsed && Array.isArray(parsed["@graph"])) {
-          candidates.push(...parsed["@graph"]);
-        } else if (parsed) {
-          candidates.push(parsed);
-        }
-
-        for (const candidate of candidates) {
-          if (isMovieNode(candidate)) {
-            return candidate;
-          }
-        }
-      } catch (_) {
-        /* ignore malformed JSON blocks */
-      }
+    if (!film) {
+      console.warn("[rateyourmusic-film-csv] Film blob not found on page.");
+      return null;
     }
 
-    return null;
-  }
-
-  function isMovieNode(node) {
-    const type = node?.["@type"];
-    if (!type) return false;
-    if (Array.isArray(type)) return type.includes("Movie");
-    return type === "Movie";
-  }
-
-  function buildRecordFromJson(json) {
-    const aggregate = json.aggregateRating || {};
-    const url = json.url || location.href;
-    const slug = getSlug(url, json["@id"]);
-    const now = new Date().toISOString();
-
-    return {
-      slug: slug || "",
-      name: (json.name || "").trim(),
-      alternateName: json.alternateName || "",
-      url,
-      releaseDate: json.datePublished || json.dateCreated || "",
-      duration: json.duration || "",
-      genres: toList(json.genre),
-      languages: toList(json.inLanguage),
-      countries: normalizeNames(json.countryOfOrigin || json.locationCreated),
-      directors: normalizeNames(json.director),
-      writers: normalizeNames(json.author || json.creator || json.writer),
-      actors: normalizeNames(json.actor || json.actors || json.cast),
-      contentRating: json.contentRating || "",
-      image: json.image || "",
-      description: json.description || "",
-      ratingValue: aggregate.ratingValue ?? "",
-      maxRating: aggregate.bestRating ?? "",
-      ratingCount: aggregate.ratingCount ?? "",
-      reviewCount: aggregate.reviewCount ?? "",
-      updatedAt: now,
-    };
-  }
-
-  function findMovieMicrodata() {
-    return (
-      document.querySelector('.release_page[itemtype*="schema.org/Movie"]') ||
-      document.querySelector(
-        '.release_page[itemprop="mainEntity"][itemscope][itemtype*="schema.org/Movie"]'
-      )
-    );
-  }
-
-  function buildRecordFromDom(movieRoot) {
-    const infoMap = collectFilmInfo();
-    const agg = movieRoot.querySelector('[itemprop="aggregateRating"]');
-    const ratingValue = readAttrOrText(agg, '[itemprop="ratingValue"]');
-    const maxRating = readAttrOrText(agg, '[itemprop="bestRating"]');
-    const ratingCount =
-      readAttr(agg, 'meta[itemprop="ratingCount"]') ||
-      numberFromText(agg?.querySelector(".num_ratings"));
-    const reviewCount =
-      readAttr(agg, 'meta[itemprop="reviewCount"]') ||
-      numberFromText(document.querySelector(".page_section .num_reviews"));
+    const metadata = collectFilmInfo();
+    const agg = film.querySelector('[itemprop="aggregateRating"]');
+    const ratingValue = agg?.querySelector('meta[itemprop="ratingValue"]')?.content;
+    const ratingCount = agg?.querySelector('meta[itemprop="ratingCount"]')?.content;
+    const maxRating = agg?.querySelector('meta[itemprop="bestRating"]')?.content;
 
     const titleNode = document.querySelector(".film_title h1");
-    const mainName = titleNode?.childNodes?.[0]?.textContent?.trim() || "";
-    const subtitle = titleNode?.querySelector(".sub_text")?.textContent?.trim() || "";
-    const alternateTitles = extractTextList(
-      document.querySelectorAll(".alt_titles li.alternate_title")
-    );
-    const alternateName = joinUnique(
-      subtitle ? [subtitle] : [],
-      alternateTitles
-    );
-
     const name =
-      movieRoot.querySelector('meta[itemprop="name"]')?.content?.trim() ||
-      mainName ||
+      film.querySelector('meta[itemprop="name"]')?.content?.trim() ||
+      titleNode?.childNodes?.[0]?.textContent?.trim() ||
       document.title;
-    const url =
-      movieRoot.querySelector('meta[itemprop="url"]')?.content || location.href;
-    const slug = getSlug(url);
-    const releaseDate =
-      movieRoot.querySelector('meta[itemprop="dateCreated"]')?.content ||
-      getInfoValue(infoMap, "Release date");
-    const duration =
-      movieRoot.querySelector('meta[itemprop="duration"]')?.content ||
-      getInfoValue(infoMap, "Runtime");
-    const languages = getInfoValue(infoMap, "Language");
-    const genres = extractGenres(movieRoot);
-    const image =
-      document.querySelector('meta[property="og:image"]')?.content ||
-      movieRoot.querySelector('meta[itemprop="image"]')?.content ||
-      movieRoot.querySelector(".coverart_img")?.src ||
+    const altTitle =
+      titleNode?.querySelector(".sub_text")?.textContent?.trim() || "";
+    const releaseDate = metadata["Release date"] || metadata["Release Date"] || "";
+    const runtime = metadata["Runtime"] || "";
+    const rank = metadata["Ranked"] || "";
+    const languages = metadata["Language"] || metadata["Languages"] || "";
+    const directors =
+      metadata["Directed by"] ||
+      Array.from(film.querySelectorAll('meta[itemprop="director"]'))
+        .map((node) => node.content?.trim())
+        .filter(Boolean)
+        .join("; ") ||
       "";
+    const cast = Array.from(film.querySelectorAll('meta[itemprop="actor"]'))
+      .map((node) => node.content?.trim())
+      .filter(Boolean)
+      .join("; ");
+    const primaryGenres = extractList(
+      document.querySelectorAll(".film_pri_genres a.film_genre")
+    );
+    const secondaryGenres = extractList(
+      document.querySelectorAll(".film_sec_genres a.film_genre")
+    );
+    const descriptors = metadata["Descriptors"] || "";
+    const studios = metadata["Studios"] || "";
+    const productionCompanies = metadata["Production Companies"] || "";
+
     const description =
       document.querySelector('meta[name="description"]')?.content ||
       document.querySelector('meta[property="og:description"]')?.content ||
       "";
+    const image =
+      document.querySelector('meta[property="og:image"]')?.content ||
+      film.querySelector("meta[itemprop=image]")?.content ||
+      "";
 
-    const metaCountries = collectMetaValues(movieRoot, [
-      'meta[itemprop="countryOfOrigin"]',
-      'meta[itemprop="contentLocation"]',
-      'meta[itemprop="locationCreated"]',
-    ]);
-    const countries = joinUnique(metaCountries);
-
-    const crew = collectCrewEntries();
-    const directors = joinUnique(
-      collectMetaValues(movieRoot, ['meta[itemprop="director"]']),
-      namesForRoles(crew, ["director"])
-    );
-    const writers = joinUnique(
-      namesForRoles(crew, [
-        "writer",
-        "screenwriter",
-        "screen story",
-        "script",
-        "screenplay",
-        "story",
-      ])
-    );
-    const actors = joinUnique(
-      collectMetaValues(movieRoot, ['meta[itemprop="actor"]']),
-      collectCastNames()
-    );
-
-    const contentRating =
-      movieRoot.querySelector('[itemprop="contentRating"]')?.content || "";
+    const url = film.querySelector('meta[itemprop="url"]')?.content || location.href;
+    const slug =
+      new URL(url, location.href)
+        .pathname.split("/")
+        .filter(Boolean)
+        .pop() || "other";
     const now = new Date().toISOString();
 
     return {
-      slug: slug || "",
+      slug,
       name,
-      alternateName,
-      url,
-      releaseDate: releaseDate || "",
-      duration: duration || "",
-      genres,
-      languages,
-      countries,
+      altTitle,
       directors,
-      writers,
-      actors,
-      contentRating,
-      image,
-      description,
+      cast,
+      releaseDate,
+      runtime,
+      rank,
       ratingValue: ratingValue ?? "",
       maxRating: maxRating ?? "",
       ratingCount: ratingCount ?? "",
-      reviewCount: reviewCount ?? "",
+      primaryGenres,
+      secondaryGenres,
+      descriptors,
+      languages,
+      studios,
+      productionCompanies,
+      image,
+      description,
+      url,
       updatedAt: now,
     };
   }
 
   function collectFilmInfo() {
-    const rows = document.querySelectorAll(".film_info tr");
+    const rows = document.querySelectorAll(".film_info tr, .film_infox tr");
     const map = {};
 
     rows.forEach((row) => {
       const header = row.querySelector("th");
       if (!header) return;
-      const key = header.textContent.trim().toLowerCase();
+      const key = header.textContent.trim();
       const values = Array.from(row.querySelectorAll("td"))
         .map((td) => td.textContent.trim().replace(/\s+/g, " "))
         .filter(Boolean);
-      if (values.length) {
-        map[key] = values.join(" ");
-      }
+      map[key] = values.join(" ");
     });
 
     return map;
   }
 
-  function getInfoValue(map, key) {
-    return map[key.toLowerCase()] || "";
-  }
-
-  function extractGenres(movieRoot) {
-    const metaGenres = collectMetaValues(movieRoot, ['meta[itemprop="genre"]']);
-    const primary = extractTextList(
-      movieRoot.querySelectorAll(".film_pri_genres a.film_genre")
-    );
-    const secondary = extractTextList(
-      movieRoot.querySelectorAll(".film_sec_genres a.film_genre")
-    );
-    return joinUnique(metaGenres, primary, secondary);
-  }
-
-  function collectMetaValues(root, selectors) {
-    return selectors
-      .flatMap((selector) =>
-        Array.from(root.querySelectorAll(selector)).map((node) =>
-          (node.getAttribute("content") || node.textContent || "").trim()
-        )
-      )
-      .filter(Boolean);
-  }
-
-  function extractTextList(nodes) {
+  function extractList(nodes) {
     return Array.from(nodes)
       .map((node) => node.textContent.trim())
-      .filter(Boolean);
-  }
-
-  function joinUnique(...lists) {
-    const set = new Set();
-    lists.forEach((list) => {
-      if (!list) return;
-      const items = Array.isArray(list) ? list : [list];
-      items.forEach((entry) => {
-        const normalized = (entry || "").toString().trim();
-        if (normalized) set.add(normalized);
-      });
-    });
-    return Array.from(set).join("; ");
-  }
-
-  function collectCrewEntries() {
-    const entries = new Map();
-    document
-      .querySelectorAll("#credits_crew li, #credits_crew_mobile li")
-      .forEach((li) => {
-        const name = li.querySelector(".film_artist")?.textContent?.trim();
-        if (!name) return;
-        const roles = Array.from(li.querySelectorAll(".role_name"))
-          .map((node) => node.textContent.trim().toLowerCase())
-          .filter(Boolean);
-        const existing = entries.get(name) || [];
-        entries.set(name, Array.from(new Set([...existing, ...roles])));
-      });
-
-    return Array.from(entries, ([name, roles]) => ({ name, roles }));
-  }
-
-  function collectCastNames() {
-    return extractTextList(
-      document.querySelectorAll(
-        "#credits_cast li .film_artist, #credits_cast_mobile li .film_artist"
-      )
-    );
-  }
-
-  function namesForRoles(entries, keywords) {
-    const needles = keywords.map((k) => k.toLowerCase());
-    return entries
-      .filter((entry) =>
-        entry.roles.some((role) =>
-          needles.some((needle) => role.includes(needle))
-        )
-      )
-      .map((entry) => entry.name);
-  }
-
-  function readAttr(root, selector) {
-    if (!root) return "";
-    const node = root.querySelector(selector);
-    return node?.getAttribute("content")?.trim() || "";
-  }
-
-  function readAttrOrText(root, selector) {
-    if (!root) return "";
-    const node = root.querySelector(selector);
-    if (!node) return "";
-    return node.getAttribute("content")?.trim() || node.textContent?.trim() || "";
-  }
-
-  function numberFromText(node) {
-    if (!node) return "";
-    const match = node.textContent.replace(/[^0-9]/g, "");
-    return match || "";
-  }
-
-  function getSlug(url, id) {
-    const source = id || url;
-    if (!source) return "";
-    try {
-      return new URL(source, location.href).pathname.split("/").filter(Boolean).pop() || "";
-    } catch (_) {
-      return String(source).split("/").filter(Boolean).pop() || "";
-    }
+      .filter(Boolean)
+      .join("; ");
   }
 
   async function upsertRecord(record) {
@@ -371,27 +161,6 @@
       firstSeen: existing.firstSeen || record.updatedAt,
     };
     await saveRecords(records);
-  }
-
-  function toList(value) {
-    if (Array.isArray(value)) return value.join("; ");
-    if (typeof value === "string" || typeof value === "number") return String(value);
-    return "";
-  }
-
-  function normalizeNames(value) {
-    if (!value) return "";
-    if (Array.isArray(value)) {
-      return value
-        .map((entry) => normalizeNames(entry))
-        .filter(Boolean)
-        .join("; ");
-    }
-    if (typeof value === "string") return value;
-    if (typeof value === "object") {
-      return value.name || "";
-    }
-    return "";
   }
 
   async function loadRecords() {
@@ -414,26 +183,27 @@
   function buildCsv(records) {
     const headers = [
       "name",
-      "alternateName",
       "slug",
-      "url",
-      "releaseDate",
-      "duration",
-      "genres",
-      "languages",
-      "countries",
+      "altTitle",
       "directors",
-      "writers",
-      "actors",
-      "contentRating",
+      "cast",
+      "releaseDate",
+      "runtime",
+      "rank",
       "ratingValue",
       "maxRating",
       "ratingCount",
-      "reviewCount",
+      "primaryGenres",
+      "secondaryGenres",
+      "descriptors",
+      "languages",
+      "studios",
+      "productionCompanies",
       "image",
+      "description",
+      "url",
       "firstSeen",
       "updatedAt",
-      "description",
     ];
 
     const rows = Object.values(records)
