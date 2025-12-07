@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Glitchwave Game CSV Tracker
-// @namespace    https://example.com/userscripts
-// @version      1.0.0
-// @description  Keep a CSV of Glitchwave game metadata and ratings updated every time you open a game page.
-// @author       You
+// @namespace    https://github.com/dbeley/rym-userscripts
+// @version      1.0.1
+// @description  Capture game metadata on Glitchwave pages and keep a CSV in sync (auto-save or manual download).
+// @author       dbeley
 // @match        https://glitchwave.com/game/*
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -13,6 +13,7 @@
 // ==/UserScript==
 
 (function () {
+  "use strict";
   const STORAGE_KEY = "glitchwave-csv::records";
   const DB_NAME = "glitchwave-csv";
   const STORE_NAME = "handles";

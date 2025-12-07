@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         RateYourMusic Release CSV Tracker
-// @namespace    https://example.com/userscripts
-// @version      1.0.0
-// @description  Track album metadata from RateYourMusic release pages and keep a CSV up to date on disk.
-// @author       You
+// @namespace    https://github.com/dbeley/rym-userscripts
+// @version      1.0.1
+// @description  Capture release metadata on RateYourMusic pages and keep a CSV in sync (auto-save or manual download).
+// @author       dbeley
 // @match        https://rateyourmusic.com/release/*
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -13,6 +13,7 @@
 // ==/UserScript==
 
 (function () {
+  "use strict";
   const STORAGE_KEY = "rateyourmusic-csv::records";
   const DB_NAME = "rateyourmusic-csv";
   const STORE_NAME = "handles";
