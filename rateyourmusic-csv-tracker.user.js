@@ -280,11 +280,16 @@
       };
     } else {
       // Full data or both partial - do normal merge
-      records[record.slug] = {
+      const merged = {
         ...existing,
         ...record,
         firstSeen: existing.firstSeen || record.updatedAt,
       };
+      // If incoming record is not partial (isPartial is undefined), remove the flag
+      if (!record.isPartial) {
+        delete merged.isPartial;
+      }
+      records[record.slug] = merged;
     }
     
     await saveRecords(records);
