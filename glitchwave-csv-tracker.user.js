@@ -117,7 +117,7 @@
       const name = link.textContent.trim();
 
       // Get the parent container to find metadata
-      const container = card.closest('.chart_card_top')?.parentElement;
+      const container = card.parentElement;
       if (!container) return;
 
       // Extract release date
