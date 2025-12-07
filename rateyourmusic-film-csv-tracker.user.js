@@ -323,6 +323,7 @@
       "ratingValue",
       "maxRating",
       "ratingCount",
+      "reviewCount",
       "primaryGenres",
       "secondaryGenres",
       "descriptors",
