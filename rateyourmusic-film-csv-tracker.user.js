@@ -45,6 +45,11 @@
       return buildRecordFromJson(json);
     }
 
+    const microdata = findMovieMicrodata();
+    if (microdata) {
+      return buildRecordFromDom(microdata);
+    }
+
     console.warn("[rateyourmusic-film-csv] No Movie JSON-LD block found.");
     return null;
   }
@@ -115,6 +120,236 @@
       reviewCount: aggregate.reviewCount ?? "",
       updatedAt: now,
     };
+  }
+
+  function findMovieMicrodata() {
+    return (
+      document.querySelector('.release_page[itemtype*="schema.org/Movie"]') ||
+      document.querySelector(
+        '.release_page[itemprop="mainEntity"][itemscope][itemtype*="schema.org/Movie"]'
+      )
+    );
+  }
+
+  function buildRecordFromDom(movieRoot) {
+    const infoMap = collectFilmInfo();
+    const agg = movieRoot.querySelector('[itemprop="aggregateRating"]');
+    const ratingValue = readAttrOrText(agg, '[itemprop="ratingValue"]');
+    const maxRating = readAttrOrText(agg, '[itemprop="bestRating"]');
+    const ratingCount =
+      readAttr(agg, 'meta[itemprop="ratingCount"]') ||
+      numberFromText(agg?.querySelector(".num_ratings"));
+    const reviewCount =
+      readAttr(agg, 'meta[itemprop="reviewCount"]') ||
+      numberFromText(document.querySelector(".page_section .num_reviews"));
+
+    const titleNode = document.querySelector(".film_title h1");
+    const mainName = titleNode?.childNodes?.[0]?.textContent?.trim() || "";
+    const subtitle = titleNode?.querySelector(".sub_text")?.textContent?.trim() || "";
+    const alternateTitles = extractTextList(
+      document.querySelectorAll(".alt_titles li.alternate_title")
+    );
+    const alternateName = joinUnique(
+      subtitle ? [subtitle] : [],
+      alternateTitles
+    );
+
+    const name =
+      movieRoot.querySelector('meta[itemprop="name"]')?.content?.trim() ||
+      mainName ||
+      document.title;
+    const url =
+      movieRoot.querySelector('meta[itemprop="url"]')?.content || location.href;
+    const slug = getSlug(url);
+    const releaseDate =
+      movieRoot.querySelector('meta[itemprop="dateCreated"]')?.content ||
+      getInfoValue(infoMap, "Release date");
+    const duration =
+      movieRoot.querySelector('meta[itemprop="duration"]')?.content ||
+      getInfoValue(infoMap, "Runtime");
+    const languages = getInfoValue(infoMap, "Language");
+    const genres = extractGenres(movieRoot);
+    const image =
+      document.querySelector('meta[property="og:image"]')?.content ||
+      movieRoot.querySelector('meta[itemprop="image"]')?.content ||
+      movieRoot.querySelector(".coverart_img")?.src ||
+      "";
+    const description =
+      document.querySelector('meta[name="description"]')?.content ||
+      document.querySelector('meta[property="og:description"]')?.content ||
+      "";
+
+    const metaCountries = collectMetaValues(movieRoot, [
+      'meta[itemprop="countryOfOrigin"]',
+      'meta[itemprop="contentLocation"]',
+      'meta[itemprop="locationCreated"]',
+    ]);
+    const countries = joinUnique(metaCountries);
+
+    const crew = collectCrewEntries();
+    const directors = joinUnique(
+      collectMetaValues(movieRoot, ['meta[itemprop="director"]']),
+      namesForRoles(crew, ["director"])
+    );
+    const writers = joinUnique(
+      namesForRoles(crew, [
+        "writer",
+        "screenwriter",
+        "screen story",
+        "script",
+        "screenplay",
+        "story",
+      ])
+    );
+    const actors = joinUnique(
+      collectMetaValues(movieRoot, ['meta[itemprop="actor"]']),
+      collectCastNames()
+    );
+
+    const contentRating =
+      movieRoot.querySelector('[itemprop="contentRating"]')?.content || "";
+    const now = new Date().toISOString();
+
+    return {
+      slug: slug || "",
+      name,
+      alternateName,
+      url,
+      releaseDate: releaseDate || "",
+      duration: duration || "",
+      genres,
+      languages,
+      countries,
+      directors,
+      writers,
+      actors,
+      contentRating,
+      image,
+      description,
+      ratingValue: ratingValue ?? "",
+      maxRating: maxRating ?? "",
+      ratingCount: ratingCount ?? "",
+      reviewCount: reviewCount ?? "",
+      updatedAt: now,
+    };
+  }
+
+  function collectFilmInfo() {
+    const rows = document.querySelectorAll(".film_info tr");
+    const map = {};
+
+    rows.forEach((row) => {
+      const header = row.querySelector("th");
+      if (!header) return;
+      const key = header.textContent.trim().toLowerCase();
+      const values = Array.from(row.querySelectorAll("td"))
+        .map((td) => td.textContent.trim().replace(/\s+/g, " "))
+        .filter(Boolean);
+      if (values.length) {
+        map[key] = values.join(" ");
+      }
+    });
+
+    return map;
+  }
+
+  function getInfoValue(map, key) {
+    return map[key.toLowerCase()] || "";
+  }
+
+  function extractGenres(movieRoot) {
+    const metaGenres = collectMetaValues(movieRoot, ['meta[itemprop="genre"]']);
+    const primary = extractTextList(
+      movieRoot.querySelectorAll(".film_pri_genres a.film_genre")
+    );
+    const secondary = extractTextList(
+      movieRoot.querySelectorAll(".film_sec_genres a.film_genre")
+    );
+    return joinUnique(metaGenres, primary, secondary);
+  }
+
+  function collectMetaValues(root, selectors) {
+    return selectors
+      .flatMap((selector) =>
+        Array.from(root.querySelectorAll(selector)).map((node) =>
+          (node.getAttribute("content") || node.textContent || "").trim()
+        )
+      )
+      .filter(Boolean);
+  }
+
+  function extractTextList(nodes) {
+    return Array.from(nodes)
+      .map((node) => node.textContent.trim())
+      .filter(Boolean);
+  }
+
+  function joinUnique(...lists) {
+    const set = new Set();
+    lists.forEach((list) => {
+      if (!list) return;
+      const items = Array.isArray(list) ? list : [list];
+      items.forEach((entry) => {
+        const normalized = (entry || "").toString().trim();
+        if (normalized) set.add(normalized);
+      });
+    });
+    return Array.from(set).join("; ");
+  }
+
+  function collectCrewEntries() {
+    const entries = new Map();
+    document
+      .querySelectorAll("#credits_crew li, #credits_crew_mobile li")
+      .forEach((li) => {
+        const name = li.querySelector(".film_artist")?.textContent?.trim();
+        if (!name) return;
+        const roles = Array.from(li.querySelectorAll(".role_name"))
+          .map((node) => node.textContent.trim().toLowerCase())
+          .filter(Boolean);
+        const existing = entries.get(name) || [];
+        entries.set(name, Array.from(new Set([...existing, ...roles])));
+      });
+
+    return Array.from(entries, ([name, roles]) => ({ name, roles }));
+  }
+
+  function collectCastNames() {
+    return extractTextList(
+      document.querySelectorAll(
+        "#credits_cast li .film_artist, #credits_cast_mobile li .film_artist"
+      )
+    );
+  }
+
+  function namesForRoles(entries, keywords) {
+    const needles = keywords.map((k) => k.toLowerCase());
+    return entries
+      .filter((entry) =>
+        entry.roles.some((role) =>
+          needles.some((needle) => role.includes(needle))
+        )
+      )
+      .map((entry) => entry.name);
+  }
+
+  function readAttr(root, selector) {
+    if (!root) return "";
+    const node = root.querySelector(selector);
+    return node?.getAttribute("content")?.trim() || "";
+  }
+
+  function readAttrOrText(root, selector) {
+    if (!root) return "";
+    const node = root.querySelector(selector);
+    if (!node) return "";
+    return node.getAttribute("content")?.trim() || node.textContent?.trim() || "";
+  }
+
+  function numberFromText(node) {
+    if (!node) return "";
+    const match = node.textContent.replace(/[^0-9]/g, "");
+    return match || "";
   }
 
   function getSlug(url, id) {
