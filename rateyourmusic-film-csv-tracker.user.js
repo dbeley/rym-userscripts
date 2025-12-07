@@ -114,12 +114,9 @@
       "";
 
     const urlFromMeta = film.querySelector('meta[itemprop="url"]')?.content || location.href;
-    const url = new URL(urlFromMeta, location.href).href;
-    const slug =
-      new URL(url)
-        .pathname.split("/")
-        .filter(Boolean)
-        .pop() || "other";
+    const urlObj = new URL(urlFromMeta, location.href);
+    const url = urlObj.href;
+    const slug = urlObj.pathname.split("/").filter(Boolean).pop() || "other";
     const now = new Date().toISOString();
 
     return {

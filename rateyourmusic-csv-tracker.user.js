@@ -102,12 +102,9 @@
     const url =
       release.querySelector('meta[itemprop="url"]')?.content ||
       location.href;
-    const fullUrl = new URL(url, location.href).href;
-    const slug =
-      new URL(fullUrl)
-        .pathname.split("/")
-        .filter(Boolean)
-        .pop() || "other";
+    const urlObj = new URL(url, location.href);
+    const fullUrl = urlObj.href;
+    const slug = urlObj.pathname.split("/").filter(Boolean).pop() || "other";
     const now = new Date().toISOString();
 
     return {

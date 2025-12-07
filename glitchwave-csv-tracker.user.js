@@ -79,10 +79,11 @@
   function buildRecord(json) {
     const aggregate = json.aggregateRating || {};
     const urlFromJson = json.url || location.href;
-    const url = new URL(urlFromJson, location.href).href;
+    const urlObj = new URL(urlFromJson, location.href);
+    const url = urlObj.href;
     const slug =
       (json["@id"] && json["@id"].split("/").filter(Boolean).pop()) ||
-      new URL(url).pathname.split("/").filter(Boolean).pop();
+      urlObj.pathname.split("/").filter(Boolean).pop();
     const now = new Date().toISOString();
 
     return {
