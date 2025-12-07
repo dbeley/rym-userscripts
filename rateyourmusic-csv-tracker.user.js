@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         RateYourMusic Release CSV Tracker
 // @namespace    https://github.com/dbeley/rym-userscripts
-// @version      1.0.1
+// @version      1.1.0
 // @description  Capture release metadata on RateYourMusic pages and keep a CSV in sync (auto-save or manual download).
 // @author       dbeley
 // @match        https://rateyourmusic.com/release/*
+// @match        https://rateyourmusic.com/charts/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
@@ -29,6 +30,22 @@
   main().catch(console.error);
 
   async function main() {
+    // Check if we're on a chart page
+    if (window.location.pathname.includes('/charts/')) {
+      const records = extractChartRecords();
+      if (records.length > 0) {
+        for (const record of records) {
+          await upsertRecord(record);
+        }
+        console.info(
+          `[rateyourmusic-csv] Recorded ${records.length} releases from chart page`
+        );
+        await writeCsvToDisk();
+      }
+      return;
+    }
+
+    // Otherwise, extract from release page
     const record = extractReleaseRecord();
     if (!record) return;
 
@@ -85,11 +102,9 @@
     const url =
       release.querySelector('meta[itemprop="url"]')?.content ||
       location.href;
-    const slug =
-      new URL(url, location.href)
-        .pathname.split("/")
-        .filter(Boolean)
-        .pop() || "other";
+    const urlObj = new URL(url, location.href);
+    const fullUrl = urlObj.href;
+    const slug = urlObj.pathname.split("/").filter(Boolean).pop() || "other";
     const now = new Date().toISOString();
 
     return {
@@ -109,9 +124,95 @@
       languages,
       description,
       image,
-      url,
+      url: fullUrl,
       updatedAt: now,
     };
+  }
+
+  function extractChartRecords() {
+    const chartItems = document.querySelectorAll('.page_charts_section_charts_item.object_release');
+    const records = [];
+
+    chartItems.forEach((item) => {
+      const link = item.querySelector('.page_charts_section_charts_item_link.release');
+      if (!link) return;
+
+      const url = new URL(link.href, location.href).href;
+      const slug = new URL(url).pathname.split('/').filter(Boolean).pop();
+      if (!slug) return;
+
+      // Extract name
+      const nameNode = link.querySelector('.ui_name_locale_original');
+      const name = nameNode ? nameNode.textContent.trim() : link.textContent.trim();
+
+      // Extract artist
+      const artistLink = item.querySelector('.page_charts_section_charts_item_credited_links_primary a.artist');
+      const artistNameNode = artistLink?.querySelector('.ui_name_locale_original');
+      const artist = artistNameNode ? artistNameNode.textContent.trim() : (artistLink?.textContent.trim() || "");
+
+      // Extract release date
+      const dateNode = item.querySelector('.page_charts_section_charts_item_date span');
+      const releaseDate = dateNode ? dateNode.textContent.trim() : "";
+
+      // Extract type
+      const typeNode = item.querySelector('.page_charts_section_charts_item_release_type');
+      const type = typeNode ? typeNode.textContent.trim() : "";
+
+      // Extract rating info
+      const ratingNode = item.querySelector('.page_charts_section_charts_item_details_average_num');
+      const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
+
+      const ratingCountNode = item.querySelector('.page_charts_section_charts_item_details_ratings .abbr');
+      const ratingCount = ratingCountNode ? ratingCountNode.textContent.trim() : "";
+
+      const reviewCountNode = item.querySelector('.page_charts_section_charts_item_details_reviews .abbr');
+      const reviewCount = reviewCountNode ? reviewCountNode.textContent.trim() : "";
+
+      // Extract genres
+      const primaryGenres = extractList(
+        item.querySelectorAll('.page_charts_section_charts_item_genres_primary a.genre')
+      );
+      const secondaryGenres = extractList(
+        item.querySelectorAll('.page_charts_section_charts_item_genres_secondary a.genre')
+      );
+
+      // Extract descriptors
+      const descriptorNodes = item.querySelectorAll('.page_charts_section_charts_item_genre_descriptors .comma_separated');
+      const descriptors = Array.from(descriptorNodes)
+        .map(node => node.textContent.trim())
+        .filter(Boolean)
+        .join('; ');
+
+      // Extract image
+      const imgNode = item.querySelector('.page_charts_section_charts_item_image img');
+      const image = imgNode ? imgNode.src : "";
+
+      const now = new Date().toISOString();
+
+      records.push({
+        slug,
+        name,
+        artist,
+        type,
+        releaseDate,
+        rank: "", // Not available on chart items
+        ratingValue,
+        maxRating: "", // Not available on chart items
+        ratingCount,
+        reviewCount,
+        primaryGenres,
+        secondaryGenres,
+        descriptors,
+        languages: "", // Not available on chart items
+        description: "", // Not available on chart items
+        image,
+        url,
+        updatedAt: now,
+        isPartial: true, // Mark as partial data
+      });
+    });
+
+    return records;
   }
 
   function collectAlbumInfo() {
@@ -151,11 +252,45 @@
   async function upsertRecord(record) {
     const records = await loadRecords();
     const existing = records[record.slug] || {};
-    records[record.slug] = {
-      ...existing,
-      ...record,
-      firstSeen: existing.firstSeen || record.updatedAt,
-    };
+    
+    // If the new record is partial, only update fields that have values
+    // and preserve full data if it exists
+    if (record.isPartial && !existing.isPartial) {
+      // Merge partial data into full data, keeping full data when available
+      records[record.slug] = {
+        ...existing,
+        slug: record.slug, // Ensure slug is always set
+        // Only update these fields from partial data if they're not empty
+        ...(record.name && { name: record.name }),
+        ...(record.artist && { artist: record.artist }),
+        ...(record.type && { type: record.type }),
+        ...(record.releaseDate && { releaseDate: record.releaseDate }),
+        ...(record.ratingValue && { ratingValue: record.ratingValue }),
+        ...(record.ratingCount && { ratingCount: record.ratingCount }),
+        ...(record.reviewCount && { reviewCount: record.reviewCount }),
+        ...(record.primaryGenres && { primaryGenres: record.primaryGenres }),
+        ...(record.secondaryGenres && { secondaryGenres: record.secondaryGenres }),
+        ...(record.descriptors && { descriptors: record.descriptors }),
+        ...(record.image && { image: record.image }),
+        // Update URL only if it's different
+        ...(record.url && record.url !== existing.url && { url: record.url }),
+        updatedAt: record.updatedAt,
+        firstSeen: existing.firstSeen || record.updatedAt,
+      };
+    } else {
+      // Full data or both partial - do normal merge
+      const merged = {
+        ...existing,
+        ...record,
+        firstSeen: existing.firstSeen || record.updatedAt,
+      };
+      // If incoming record doesn't have isPartial property, remove the flag
+      if (record.isPartial === undefined) {
+        delete merged.isPartial;
+      }
+      records[record.slug] = merged;
+    }
+    
     await saveRecords(records);
   }
 
