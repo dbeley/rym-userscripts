@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Glitchwave Game CSV Tracker
 // @namespace    https://github.com/dbeley/rym-userscripts
-// @version      1.2.0
+// @version      1.1.0
 // @description  Capture game metadata on Glitchwave pages and keep a CSV in sync (auto-save or manual download).
 // @author       dbeley
 // @match        https://glitchwave.com/game/*
@@ -16,12 +16,9 @@
 (function () {
   "use strict";
   const STORAGE_KEY = "glitchwave-csv::records";
-  const AUTO_DOWNLOAD_KEY = "glitchwave-csv::auto-download";
   const DB_NAME = "glitchwave-csv";
   const STORE_NAME = "handles";
   const FILE_KEY = "csv-output";
-
-  const supportsFileSystemAccess = typeof window.showSaveFilePicker === "function";
 
   GM_registerMenuCommand("Set CSV output file", () => {
     pickCsvFile(true).catch(console.error);
@@ -29,12 +26,6 @@
   GM_registerMenuCommand("Download CSV once", () => {
     downloadCsv().catch(console.error);
   });
-  
-  if (!supportsFileSystemAccess) {
-    GM_registerMenuCommand("Toggle auto-download", () => {
-      toggleAutoDownload().catch(console.error);
-    });
-  }
 
   main().catch(console.error);
 
@@ -291,22 +282,6 @@
   async function writeCsvToDisk() {
     const records = await loadRecords();
     const csv = buildCsv(records);
-    
-    // Browsers without File System Access API: use auto-download if enabled
-    if (!supportsFileSystemAccess) {
-      const autoDownload = await GM_getValue(AUTO_DOWNLOAD_KEY, false);
-      if (autoDownload) {
-        await autoDownloadCsv(csv);
-        return;
-      } else {
-        console.info(
-          "[glitchwave-csv] Enable auto-download via the menu to auto-save the CSV."
-        );
-        return;
-      }
-    }
-    
-    // Chromium: use File System Access API
     const handle = await loadStoredHandle();
 
     if (!handle) {
@@ -348,9 +323,9 @@
   }
 
   async function pickCsvFile(writeCurrentCsv = false) {
-    if (!supportsFileSystemAccess) {
+    if (!window.showSaveFilePicker) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead, or enable 'Toggle auto-download' for automatic saves to your downloads folder."
+        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead."
       );
       return;
     }
@@ -371,43 +346,6 @@
     }
   }
 
-  async function toggleAutoDownload() {
-    const current = await GM_getValue(AUTO_DOWNLOAD_KEY, false);
-    const newValue = !current;
-    await GM_setValue(AUTO_DOWNLOAD_KEY, newValue);
-    
-    if (newValue) {
-      alert(
-        "Auto-download enabled! The CSV will now be automatically saved to your downloads folder whenever you visit a page.\n\n" +
-        "Note: Files will be saved as 'glitchwave-games.csv' and may accumulate in your downloads folder. " +
-        "Your browser may prompt you the first time or add a number suffix if the file already exists."
-      );
-    } else {
-      alert(
-        "Auto-download disabled. Use 'Download CSV once' from the menu to manually download the CSV."
-      );
-    }
-  }
-
-  async function autoDownloadCsv(csv) {
-    const filename = "glitchwave-games.csv";
-    const blob = new Blob([csv], { type: "text/csv" });
-    const blobUrl = URL.createObjectURL(blob);
-
-    try {
-      if (typeof GM_download === "function") {
-        await GM_download({ url: blobUrl, name: filename, saveAs: false });
-        console.debug("[glitchwave-csv] CSV auto-downloaded to downloads folder.");
-      } else {
-        console.warn("[glitchwave-csv] GM_download not available. Auto-download failed.");
-      }
-    } catch (err) {
-      console.error("[glitchwave-csv] Auto-download failed:", err);
-    } finally {
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
-    }
-  }
-
   async function downloadCsv() {
     const records = await loadRecords();
     const csv = buildCsv(records);
@@ -420,8 +358,11 @@
     const blob = new Blob([csv], { type: "text/csv" });
     const blobUrl = URL.createObjectURL(blob);
 
+    const isFirefox =
+      typeof navigator === "object" && /Firefox/.test(navigator.userAgent);
     const attempts = [
       async () => {
+        if (isFirefox) throw new Error("skip GM_download on Firefox");
         if (typeof GM_download !== "function") throw new Error("GM_download missing");
         await GM_download({ url: blobUrl, name: filename, saveAs: true });
         console.info("[glitchwave-csv] GM_download succeeded.");
