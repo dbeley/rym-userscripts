@@ -21,8 +21,7 @@
   const STORE_NAME = "handles";
   const FILE_KEY = "csv-output";
 
-  const isFirefox =
-    typeof navigator === "object" && /Firefox/.test(navigator.userAgent);
+  const supportsFileSystemAccess = typeof window.showSaveFilePicker === "function";
 
   GM_registerMenuCommand("Set CSV output file", () => {
     pickCsvFile(true).catch(console.error);
@@ -31,8 +30,8 @@
     downloadCsv().catch(console.error);
   });
   
-  if (isFirefox) {
-    GM_registerMenuCommand("Toggle auto-download (Firefox)", () => {
+  if (!supportsFileSystemAccess) {
+    GM_registerMenuCommand("Toggle auto-download", () => {
       toggleAutoDownload().catch(console.error);
     });
   }
@@ -293,15 +292,15 @@
     const records = await loadRecords();
     const csv = buildCsv(records);
     
-    // Firefox: use auto-download if enabled
-    if (isFirefox) {
+    // Browsers without File System Access API: use auto-download if enabled
+    if (!supportsFileSystemAccess) {
       const autoDownload = await GM_getValue(AUTO_DOWNLOAD_KEY, false);
       if (autoDownload) {
         await autoDownloadCsv(csv);
         return;
       } else {
         console.info(
-          "[glitchwave-csv] Enable auto-download via the menu to auto-save the CSV on Firefox."
+          "[glitchwave-csv] Enable auto-download via the menu to auto-save the CSV."
         );
         return;
       }
@@ -349,9 +348,9 @@
   }
 
   async function pickCsvFile(writeCurrentCsv = false) {
-    if (!window.showSaveFilePicker) {
+    if (!supportsFileSystemAccess) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead, or enable 'Toggle auto-download (Firefox)' for automatic saves to your downloads folder."
+        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead, or enable 'Toggle auto-download' for automatic saves to your downloads folder."
       );
       return;
     }

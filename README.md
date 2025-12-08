@@ -52,34 +52,34 @@ Helpful userscripts for rateyourmusic.com (RYM).
 - Each release page you open is added/updated in a local dataset (stored via your userscript manager).
 - **Now also works on chart pages** - automatically captures partial data for all releases visible on album/release charts.
 - Menu commands:
-  - `Set CSV output file` for auto-saves (Only compatible with Chromium-based browsers like Chrome, Edge, etc.)
+  - `Set CSV output file` for auto-saves (Only compatible with browsers that support the File System Access API, like Chrome, Edge, etc.)
   - `Download CSV once` for a one-off export (manual download, works in all browsers)
-  - `Toggle auto-download (Firefox)` for automatic saves to your downloads folder (Firefox only)
+  - `Toggle auto-download` for automatic saves to your downloads folder (appears on browsers without File System Access API support, like Firefox)
 - Captures title, artist, release date, type, rank, ratings/reviews, primary/secondary genres, descriptors, languages, description, cover image URL, page URL, and timestamps.
 - When browsing charts, partial data (name, artist, ratings, genres) is captured; visiting individual pages provides complete data while preserving chart updates for dynamic fields (ratings, review counts).
-- **Firefox users**: Use the `Toggle auto-download (Firefox)` menu option to enable automatic CSV updates. Files will be saved to your downloads folder each time you visit a page. You can manage downloaded files from your browser's downloads folder.
+- **For browsers without File System Access API**: Use the `Toggle auto-download` menu option to enable automatic CSV updates. Files will be saved to your downloads folder each time you visit a page. You can manage downloaded files from your browser's downloads folder.
 
 ### rateyourmusic-film-csv-tracker.user.js
 - Each film page you open is added/updated in a local dataset (stored via your userscript manager).
 - **Now also works on chart pages** - automatically captures partial data for all films visible on film charts.
 - Menu commands:
-  - `Set CSV output file` for auto-saves (Only compatible with Chromium-based browsers like Chrome, Edge, etc.)
+  - `Set CSV output file` for auto-saves (Only compatible with browsers that support the File System Access API, like Chrome, Edge, etc.)
   - `Download CSV once` for a one-off export (manual download, works in all browsers)
-  - `Toggle auto-download (Firefox)` for automatic saves to your downloads folder (Firefox only)
+  - `Toggle auto-download` for automatic saves to your downloads folder (appears on browsers without File System Access API support, like Firefox)
 - Captures title/alternate title, release date, duration, genres, languages, regions, directors, writers, actors, content rating, ratings/reviews, cover image URL, description, page URL, and timestamps.
 - When browsing charts, partial data (name, ratings, genres) is captured; visiting individual pages provides complete data while preserving chart updates for dynamic fields (ratings, review counts).
-- **Firefox users**: Use the `Toggle auto-download (Firefox)` menu option to enable automatic CSV updates. Files will be saved to your downloads folder each time you visit a page. You can manage downloaded files from your browser's downloads folder.
+- **For browsers without File System Access API**: Use the `Toggle auto-download` menu option to enable automatic CSV updates. Files will be saved to your downloads folder each time you visit a page. You can manage downloaded files from your browser's downloads folder.
 
 ### glitchwave-csv-tracker.user.js
 - Same workflow as the RYM tracker but for game pages on Glitchwave.
 - **Now also works on chart pages** - automatically captures partial data for all games visible on game charts.
 - Menu commands:
-  - `Set CSV output file` for auto-saves (Only compatible with Chromium-based browsers like Chrome, Edge, etc.)
+  - `Set CSV output file` for auto-saves (Only compatible with browsers that support the File System Access API, like Chrome, Edge, etc.)
   - `Download CSV once` for a one-off export (manual download, works in all browsers)
-  - `Toggle auto-download (Firefox)` for automatic saves to your downloads folder (Firefox only)
+  - `Toggle auto-download` for automatic saves to your downloads folder (appears on browsers without File System Access API support, like Firefox)
 - Captures title, release date, platforms/OS, genres, ratings/reviews, cover image URL, description, page URL, and timestamps.
 - When browsing charts, partial data (name, release date, ratings, genres) is captured; visiting individual pages provides complete data while preserving chart updates for dynamic fields (ratings, review counts).
-- **Firefox users**: Use the `Toggle auto-download (Firefox)` menu option to enable automatic CSV updates. Files will be saved to your downloads folder each time you visit a page. You can manage downloaded files from your browser's downloads folder.
+- **For browsers without File System Access API**: Use the `Toggle auto-download` menu option to enable automatic CSV updates. Files will be saved to your downloads folder each time you visit a page. You can manage downloaded files from your browser's downloads folder.
 
 ## Sample data
 
