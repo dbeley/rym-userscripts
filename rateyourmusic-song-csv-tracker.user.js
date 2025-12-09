@@ -619,9 +619,11 @@
             const records = await loadRecords();
             const recordValues = Object.values(records);
             const currentCount = recordValues.length;
-            const latestUpdate = recordValues.reduce((latest, r) => 
-              r.updatedAt > latest ? r.updatedAt : latest, ""
-            );
+            const latestUpdate = recordValues.length > 0
+              ? recordValues.reduce((latest, r) => 
+                  r.updatedAt > latest ? r.updatedAt : latest, ""
+                )
+              : "";
             
             // Only trigger callback if count changed or latest update changed
             if (currentCount !== lastRecordCount || latestUpdate !== lastUpdateTime) {
