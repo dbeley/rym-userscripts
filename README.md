@@ -97,18 +97,25 @@ const record = await window.RYMCsvTracker.getRecord('album/the-beatles/abbey-roa
 // Get count of tracked records
 const count = await window.RYMCsvTracker.getRecordsCount();
 
-// Search records by name, artist, or genre
+// Search records by name, artist, or genre (limit to 100 results by default)
 const results = await window.RYMCsvTracker.searchRecords('radiohead');
+
+// Search with custom limit (or 0 for no limit)
+const allResults = await window.RYMCsvTracker.searchRecords('jazz', 0);
 
 // Get all records as CSV string
 const csv = await window.RYMCsvTracker.getCsv();
 
-// Listen for data changes (returns unsubscribe function)
+// Listen for data changes with custom polling interval (default: 5000ms)
 const unsubscribe = window.RYMCsvTracker.onDataChange((records) => {
   console.log('Data updated!', Object.keys(records).length, 'records');
-});
+}, 10000); // Poll every 10 seconds
 // Later: unsubscribe();
 ```
+
+**Note on Performance:**
+- `searchRecords()` performs a linear search and defaults to 100 results. For large datasets, use the limit parameter.
+- `onDataChange()` polls for changes at a configurable interval (default 5 seconds). For large datasets, use longer intervals to reduce overhead.
 
 ### Usage Examples
 

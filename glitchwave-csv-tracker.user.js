@@ -512,14 +512,16 @@
         },
         
         // Search records by name, platform, or genre
-        async searchRecords(query) {
+        // Note: This performs a linear search. For large datasets, consider limiting results.
+        async searchRecords(query, limit = 100) {
           const records = await loadRecords();
           const lowerQuery = query.toLowerCase();
-          return Object.values(records).filter(record => 
+          const results = Object.values(records).filter(record => 
             (record.name && record.name.toLowerCase().includes(lowerQuery)) ||
             (record.platforms && record.platforms.toLowerCase().includes(lowerQuery)) ||
             (record.genres && record.genres.toLowerCase().includes(lowerQuery))
           );
+          return limit > 0 ? results.slice(0, limit) : results;
         },
         
         // Get records as CSV string
@@ -529,17 +531,27 @@
         },
         
         // Listen for data changes (returns unsubscribe function)
-        onDataChange(callback) {
-          // Poll for changes every 2 seconds
-          let lastRecordsStr = "";
+        // Note: Uses polling with configurable interval. For large datasets, consider longer intervals.
+        onDataChange(callback, intervalMs = 5000) {
+          // Poll for changes at specified interval (default 5 seconds)
+          let lastRecordCount = 0;
+          let lastUpdateTime = "";
+          
           const intervalId = setInterval(async () => {
             const records = await loadRecords();
-            const currentRecordsStr = JSON.stringify(records);
-            if (currentRecordsStr !== lastRecordsStr) {
-              lastRecordsStr = currentRecordsStr;
+            const recordValues = Object.values(records);
+            const currentCount = recordValues.length;
+            const latestUpdate = recordValues.reduce((latest, r) => 
+              r.updatedAt > latest ? r.updatedAt : latest, ""
+            );
+            
+            // Only trigger callback if count changed or latest update changed
+            if (currentCount !== lastRecordCount || latestUpdate !== lastUpdateTime) {
+              lastRecordCount = currentCount;
+              lastUpdateTime = latestUpdate;
               callback(records);
             }
-          }, 2000);
+          }, intervalMs);
           
           // Return unsubscribe function
           return () => clearInterval(intervalId);
