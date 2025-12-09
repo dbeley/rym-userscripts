@@ -1,6 +1,8 @@
 # rym-userscripts
 
-Helpful userscripts for rateyourmusic.com (RYM).
+Helpful userscripts for rateyourmusic.com (RYM) and streaming platform integration.
+
+Build a local database of your RYM ratings and display them directly on Spotify, YouTube Music, Deezer, and Navidrome.
 
 ## Getting started
 
@@ -9,6 +11,28 @@ Helpful userscripts for rateyourmusic.com (RYM).
 
 ## Scripts at a glance
 
+### Data Collection Scripts (RateYourMusic)
+
+| Script | What it does | Install |
+| --- | --- | --- |
+| `rateyourmusic-csv-tracker.user.js` | Logs every RYM release page you visit into a local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-csv-tracker.user.js) |
+| `rateyourmusic-song-csv-tracker.user.js` | Logs every RYM songs page you visit into a local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-song-csv-tracker.user.js) |
+| `rateyourmusic-film-csv-tracker.user.js` | Logs every RYM film page you visit into a separate local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-film-csv-tracker.user.js) |
+| `glitchwave-csv-tracker.user.js` | Logs every Glitchwave game page you visit into a local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/glitchwave-csv-tracker.user.js) |
+
+### Streaming Platform Integration Scripts
+
+Display RYM ratings directly on popular streaming platforms using data collected by the CSV tracker scripts.
+
+| Script | Platform | What it does | Install |
+| --- | --- | --- | --- |
+| `spotify-rym-ratings.user.js` | Spotify | Displays RYM ratings on tracks and albums in Spotify Web Player. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/spotify-rym-ratings.user.js) |
+| `youtube-music-rym-ratings.user.js` | YouTube Music | Displays RYM ratings on tracks and albums in YouTube Music. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/youtube-music-rym-ratings.user.js) |
+| `deezer-rym-ratings.user.js` | Deezer | Displays RYM ratings on tracks and albums in Deezer. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/deezer-rym-ratings.user.js) |
+| `navidrome-rym-ratings.user.js` | Navidrome | Displays RYM ratings on tracks and albums in Navidrome. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/navidrome-rym-ratings.user.js) |
+
+### Utility Scripts
+
 | Script | What it does | Install |
 | --- | --- | --- |
 | `download-list.user.js` | Adds CSV and plain-text download buttons to any user list. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-list.user.js) |
@@ -16,10 +40,6 @@ Helpful userscripts for rateyourmusic.com (RYM).
 | `download-album-charts.user.js` | Exports album charts (CSV/plain text). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-album-charts.user.js) |
 | `play-chart-songs.user.js` | Adds a play button that opens the first YouTube video for each chart entry. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/play-chart-songs.user.js) |
 | `retain-filters-on-chart-links.user.js` | Keeps your current genre/region filters when navigating chart links. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js) |
-| `rateyourmusic-csv-tracker.user.js` | Logs every RYM release page you visit into a local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-csv-tracker.user.js) |
-| `rateyourmusic-song-csv-tracker.user.js` | Logs every RYM songs page you visit into a local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-song-csv-tracker.user.js) |
-| `rateyourmusic-film-csv-tracker.user.js` | Logs every RYM film page you visit into a separate local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-film-csv-tracker.user.js) |
-| `glitchwave-csv-tracker.user.js` | Logs every Glitchwave game page you visit into a local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/glitchwave-csv-tracker.user.js) |
 
 ## Script details
 
@@ -64,6 +84,43 @@ Helpful userscripts for rateyourmusic.com (RYM).
 
 ### glitchwave-csv-tracker.user.js
 - Same as `rateyourmusic-csv-tracker.user.js` for glitchwave games.
+
+### Streaming Platform Integration Scripts
+
+These scripts work together with the CSV tracker scripts to display RateYourMusic ratings directly on popular streaming platforms.
+
+#### How it works
+
+1. **Collect data**: First, use `rateyourmusic-csv-tracker.user.js` and `rateyourmusic-song-csv-tracker.user.js` to build your local database by browsing RYM as usual.
+2. **Install platform scripts**: Install the rating display script(s) for your streaming platform(s) of choice.
+3. **Browse and discover**: Ratings automatically appear on tracks and albums that match your RYM database.
+
+#### Features
+
+- **Fuzzy matching**: Intelligently matches tracks/albums even when names differ slightly between platforms
+- **Dual display**: Shows ratings both in the now-playing bar and on track/album rows
+- **Clickable badges**: Click any rating badge to open the corresponding RYM page
+- **Auto-updates**: Uses MutationObserver to handle dynamic content as you navigate
+
+#### spotify-rym-ratings.user.js
+- Displays RYM ratings on Spotify Web Player
+- Works on now-playing bar, track lists, playlists, and album cards
+- Supports both song and release ratings
+
+#### youtube-music-rym-ratings.user.js
+- Displays RYM ratings on YouTube Music
+- Works on player bar, playlists, albums, and browse sections
+- Handles YouTube Music's complex dynamic content
+
+#### deezer-rym-ratings.user.js
+- Displays RYM ratings on Deezer
+- Works on player bar, track lists, and album pages
+- Supports Deezer's single-page application architecture
+
+#### navidrome-rym-ratings.user.js
+- Displays RYM ratings on Navidrome self-hosted servers
+- Compatible with Navidrome's Material-UI interface
+- Works with the React Jinke Music Player
 
 ## Sample data
 
