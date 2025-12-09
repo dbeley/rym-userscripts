@@ -90,6 +90,10 @@
                 <div class="stat-label">RYM Albums Tracked</div>
             </div>
             <div class="stat-card">
+                <div class="stat-value" id="song-count">-</div>
+                <div class="stat-label">RYM Songs Tracked</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-value" id="film-count">-</div>
                 <div class="stat-label">RYM Films Tracked</div>
             </div>
@@ -107,6 +111,13 @@
         <button onclick="searchAlbums()">Search "radiohead"</button>
         <button onclick="getTopRated()">Get Top 10 Rated</button>
         <button onclick="getAlbumCsv()">Get as CSV</button>
+    </div>
+
+    <div class="section">
+        <h2>RYM Songs API (window.RYMSongCsvTracker)</h2>
+        <button onclick="getSongCount()">Get Song Count</button>
+        <button onclick="getAllSongs()">Get All Songs</button>
+        <button onclick="searchSongs()">Search "beatles"</button>
     </div>
 
     <div class="section">
@@ -140,6 +151,15 @@
                 }
             } catch (e) {
                 document.getElementById('album-count').textContent = 'N/A';
+            }
+
+            try {
+                if (window.RYMSongCsvTracker) {
+                    const count = await window.RYMSongCsvTracker.getRecordsCount();
+                    document.getElementById('song-count').textContent = count;
+                }
+            } catch (e) {
+                document.getElementById('song-count').textContent = 'N/A';
             }
 
             try {
@@ -219,6 +239,34 @@
             }
             const csv = await window.RYMCsvTracker.getCsv();
             output(csv.substring(0, 2000) + '\n\n... (truncated, first 2000 characters shown)');
+        }
+
+        // RYM Songs API examples
+        async function getSongCount() {
+            if (!window.RYMSongCsvTracker) {
+                output('Error: RYMSongCsvTracker API not available. Make sure you are on a RateYourMusic page with the song tracker userscript active.');
+                return;
+            }
+            const count = await window.RYMSongCsvTracker.getRecordsCount();
+            output(`Total songs tracked: ${count}`);
+        }
+
+        async function getAllSongs() {
+            if (!window.RYMSongCsvTracker) {
+                output('Error: RYMSongCsvTracker API not available.');
+                return;
+            }
+            const records = await window.RYMSongCsvTracker.getRecords();
+            output(JSON.stringify(records, null, 2));
+        }
+
+        async function searchSongs() {
+            if (!window.RYMSongCsvTracker) {
+                output('Error: RYMSongCsvTracker API not available.');
+                return;
+            }
+            const results = await window.RYMSongCsvTracker.searchRecords('beatles');
+            output(`Found ${results.length} songs:\n\n` + JSON.stringify(results, null, 2));
         }
 
         // RYM Films API examples

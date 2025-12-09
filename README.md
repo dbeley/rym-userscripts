@@ -62,6 +62,7 @@ Helpful userscripts for rateyourmusic.com (RYM).
 
 ### rateyourmusic-song-csv-tracker.user.js
 - Same as `rateyourmusic-csv-tracker.user.js` for songs.
+- **Cross-domain API**: Exposes `window.RYMSongCsvTracker` API for accessing tracked song data.
 
 ### rateyourmusic-film-csv-tracker.user.js
 - Same as `rateyourmusic-csv-tracker.user.js` for movies.
@@ -78,6 +79,7 @@ The CSV tracker scripts expose JavaScript APIs on the `window` object, allowing 
 ### Available APIs
 
 #### RateYourMusic Releases: `window.RYMCsvTracker`
+#### RateYourMusic Songs: `window.RYMSongCsvTracker`
 #### RateYourMusic Films: `window.RYMFilmCsvTracker`
 #### Glitchwave Games: `window.GlitchwaveCsvTracker`
 
