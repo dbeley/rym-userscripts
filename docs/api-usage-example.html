@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Tracker API Usage Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        #output {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSV Tracker API Usage Example</h1>
+    
+    <div class="warning">
+        <strong>Note:</strong> This page must be opened while browsing RateYourMusic or Glitchwave with the CSV tracker userscripts installed and active.
+        The APIs are only available on pages where the respective userscripts run.
+    </div>
+
+    <div class="section">
+        <h2>Quick Stats</h2>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="album-count">-</div>
+                <div class="stat-label">RYM Albums Tracked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="film-count">-</div>
+                <div class="stat-label">RYM Films Tracked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="game-count">-</div>
+                <div class="stat-label">Glitchwave Games Tracked</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>RYM Albums API (window.RYMCsvTracker)</h2>
+        <button onclick="getAlbumCount()">Get Album Count</button>
+        <button onclick="getAllAlbums()">Get All Albums</button>
+        <button onclick="searchAlbums()">Search "radiohead"</button>
+        <button onclick="getTopRated()">Get Top 10 Rated</button>
+        <button onclick="getAlbumCsv()">Get as CSV</button>
+    </div>
+
+    <div class="section">
+        <h2>RYM Films API (window.RYMFilmCsvTracker)</h2>
+        <button onclick="getFilmCount()">Get Film Count</button>
+        <button onclick="getAllFilms()">Get All Films</button>
+        <button onclick="searchFilms()">Search "tarantino"</button>
+    </div>
+
+    <div class="section">
+        <h2>Glitchwave Games API (window.GlitchwaveCsvTracker)</h2>
+        <button onclick="getGameCount()">Get Game Count</button>
+        <button onclick="getAllGames()">Get All Games</button>
+        <button onclick="searchGames()">Search "zelda"</button>
+    </div>
+
+    <div class="section">
+        <h2>Output</h2>
+        <pre id="output">Click a button above to test the API...</pre>
+    </div>
+
+    <script>
+        // Update stats on load
+        updateStats();
+
+        async function updateStats() {
+            try {
+                if (window.RYMCsvTracker) {
+                    const count = await window.RYMCsvTracker.getRecordsCount();
+                    document.getElementById('album-count').textContent = count;
+                }
+            } catch (e) {
+                document.getElementById('album-count').textContent = 'N/A';
+            }
+
+            try {
+                if (window.RYMFilmCsvTracker) {
+                    const count = await window.RYMFilmCsvTracker.getRecordsCount();
+                    document.getElementById('film-count').textContent = count;
+                }
+            } catch (e) {
+                document.getElementById('film-count').textContent = 'N/A';
+            }
+
+            try {
+                if (window.GlitchwaveCsvTracker) {
+                    const count = await window.GlitchwaveCsvTracker.getRecordsCount();
+                    document.getElementById('game-count').textContent = count;
+                }
+            } catch (e) {
+                document.getElementById('game-count').textContent = 'N/A';
+            }
+        }
+
+        function output(text) {
+            document.getElementById('output').textContent = text;
+        }
+
+        // RYM Albums API examples
+        async function getAlbumCount() {
+            if (!window.RYMCsvTracker) {
+                output('Error: RYMCsvTracker API not available. Make sure you are on a RateYourMusic page with the userscript active.');
+                return;
+            }
+            const count = await window.RYMCsvTracker.getRecordsCount();
+            output(`Total albums tracked: ${count}`);
+        }
+
+        async function getAllAlbums() {
+            if (!window.RYMCsvTracker) {
+                output('Error: RYMCsvTracker API not available.');
+                return;
+            }
+            const records = await window.RYMCsvTracker.getRecords();
+            output(JSON.stringify(records, null, 2));
+        }
+
+        async function searchAlbums() {
+            if (!window.RYMCsvTracker) {
+                output('Error: RYMCsvTracker API not available.');
+                return;
+            }
+            const results = await window.RYMCsvTracker.searchRecords('radiohead');
+            output(`Found ${results.length} albums:\n\n` + JSON.stringify(results, null, 2));
+        }
+
+        async function getTopRated() {
+            if (!window.RYMCsvTracker) {
+                output('Error: RYMCsvTracker API not available.');
+                return;
+            }
+            const records = await window.RYMCsvTracker.getRecords();
+            const albums = Object.values(records);
+            const topRated = albums
+                .filter(a => a.ratingValue)
+                .sort((a, b) => parseFloat(b.ratingValue) - parseFloat(a.ratingValue))
+                .slice(0, 10);
+            
+            const formatted = topRated.map((a, i) => 
+                `${i + 1}. ${a.name} by ${a.artist} - Rating: ${a.ratingValue}/5 (${a.ratingCount} ratings)`
+            ).join('\n');
+            
+            output(`Top 10 Rated Albums:\n\n${formatted}`);
+        }
+
+        async function getAlbumCsv() {
+            if (!window.RYMCsvTracker) {
+                output('Error: RYMCsvTracker API not available.');
+                return;
+            }
+            const csv = await window.RYMCsvTracker.getCsv();
+            output(csv.substring(0, 2000) + '\n\n... (truncated, first 2000 characters shown)');
+        }
+
+        // RYM Films API examples
+        async function getFilmCount() {
+            if (!window.RYMFilmCsvTracker) {
+                output('Error: RYMFilmCsvTracker API not available. Make sure you are on a RateYourMusic page with the film tracker userscript active.');
+                return;
+            }
+            const count = await window.RYMFilmCsvTracker.getRecordsCount();
+            output(`Total films tracked: ${count}`);
+        }
+
+        async function getAllFilms() {
+            if (!window.RYMFilmCsvTracker) {
+                output('Error: RYMFilmCsvTracker API not available.');
+                return;
+            }
+            const records = await window.RYMFilmCsvTracker.getRecords();
+            output(JSON.stringify(records, null, 2));
+        }
+
+        async function searchFilms() {
+            if (!window.RYMFilmCsvTracker) {
+                output('Error: RYMFilmCsvTracker API not available.');
+                return;
+            }
+            const results = await window.RYMFilmCsvTracker.searchRecords('tarantino');
+            output(`Found ${results.length} films:\n\n` + JSON.stringify(results, null, 2));
+        }
+
+        // Glitchwave Games API examples
+        async function getGameCount() {
+            if (!window.GlitchwaveCsvTracker) {
+                output('Error: GlitchwaveCsvTracker API not available. Make sure you are on a Glitchwave page with the userscript active.');
+                return;
+            }
+            const count = await window.GlitchwaveCsvTracker.getRecordsCount();
+            output(`Total games tracked: ${count}`);
+        }
+
+        async function getAllGames() {
+            if (!window.GlitchwaveCsvTracker) {
+                output('Error: GlitchwaveCsvTracker API not available.');
+                return;
+            }
+            const records = await window.GlitchwaveCsvTracker.getRecords();
+            output(JSON.stringify(records, null, 2));
+        }
+
+        async function searchGames() {
+            if (!window.GlitchwaveCsvTracker) {
+                output('Error: GlitchwaveCsvTracker API not available.');
+                return;
+            }
+            const results = await window.GlitchwaveCsvTracker.searchRecords('zelda');
+            output(`Found ${results.length} games:\n\n` + JSON.stringify(results, null, 2));
+        }
+
+        // Set up auto-refresh for stats every 5 seconds
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>

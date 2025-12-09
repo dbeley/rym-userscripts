@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         RateYourMusic Release CSV Tracker
 // @namespace    https://github.com/dbeley/rym-userscripts
-// @version      1.1.0
-// @description  Capture release metadata on RateYourMusic pages and keep a CSV in sync (auto-save or manual download).
+// @version      1.2.0
+// @description  Capture release metadata on RateYourMusic pages and keep a CSV in sync (auto-save or manual download). Provides cross-domain API access.
 // @author       dbeley
 // @match        https://rateyourmusic.com/release/*
 // @match        https://rateyourmusic.com/charts/*
@@ -10,6 +10,7 @@
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
 // @grant        GM_download
+// @grant        GM_setClipboard
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -26,6 +27,12 @@
   GM_registerMenuCommand("Download CSV once", () => {
     downloadCsv().catch(console.error);
   });
+  GM_registerMenuCommand("Copy data as JSON", () => {
+    copyDataAsJson().catch(console.error);
+  });
+
+  // Expose API for cross-domain/cross-script access
+  exposeDataApi();
 
   main().catch(console.error);
 
@@ -518,5 +525,101 @@
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
+  }
+
+  async function copyDataAsJson() {
+    const records = await loadRecords();
+    const json = JSON.stringify(records, null, 2);
+    
+    if (typeof GM_setClipboard === "function") {
+      GM_setClipboard(json, "text");
+      alert(
+        `Copied ${Object.keys(records).length} records to clipboard as JSON.\n\n` +
+        `You can now paste this data into another script or application.`
+      );
+      console.info("[rateyourmusic-csv] JSON data copied to clipboard");
+    } else {
+      // Fallback: create a temporary textarea and copy
+      const textarea = document.createElement("textarea");
+      textarea.value = json;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        alert(
+          `Copied ${Object.keys(records).length} records to clipboard as JSON.\n\n` +
+          `You can now paste this data into another script or application.`
+        );
+        console.info("[rateyourmusic-csv] JSON data copied to clipboard (fallback)");
+      } catch (err) {
+        alert("Failed to copy to clipboard. Check console for data.");
+        console.log("[rateyourmusic-csv] JSON data:", json);
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+  }
+
+  function exposeDataApi() {
+    // Expose a read-only API on the window object for cross-script access
+    if (typeof window !== "undefined") {
+      window.RYMCsvTracker = {
+        // Get all records as a plain object
+        async getRecords() {
+          return await loadRecords();
+        },
+        
+        // Get a single record by slug
+        async getRecord(slug) {
+          const records = await loadRecords();
+          return records[slug] || null;
+        },
+        
+        // Get records count
+        async getRecordsCount() {
+          const records = await loadRecords();
+          return Object.keys(records).length;
+        },
+        
+        // Search records by name, artist, or genre
+        async searchRecords(query) {
+          const records = await loadRecords();
+          const lowerQuery = query.toLowerCase();
+          return Object.values(records).filter(record => 
+            (record.name && record.name.toLowerCase().includes(lowerQuery)) ||
+            (record.artist && record.artist.toLowerCase().includes(lowerQuery)) ||
+            (record.primaryGenres && record.primaryGenres.toLowerCase().includes(lowerQuery)) ||
+            (record.secondaryGenres && record.secondaryGenres.toLowerCase().includes(lowerQuery))
+          );
+        },
+        
+        // Get records as CSV string
+        async getCsv() {
+          const records = await loadRecords();
+          return buildCsv(records);
+        },
+        
+        // Listen for data changes (returns unsubscribe function)
+        onDataChange(callback) {
+          // Poll for changes every 2 seconds
+          let lastRecordsStr = "";
+          const intervalId = setInterval(async () => {
+            const records = await loadRecords();
+            const currentRecordsStr = JSON.stringify(records);
+            if (currentRecordsStr !== lastRecordsStr) {
+              lastRecordsStr = currentRecordsStr;
+              callback(records);
+            }
+          }, 2000);
+          
+          // Return unsubscribe function
+          return () => clearInterval(intervalId);
+        }
+      };
+      
+      console.info("[rateyourmusic-csv] API exposed at window.RYMCsvTracker");
+    }
   }
 })();

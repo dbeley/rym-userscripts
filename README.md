@@ -52,18 +52,96 @@ Helpful userscripts for rateyourmusic.com (RYM).
 ### rateyourmusic-csv-tracker.user.js
 - Each release page you open is added/updated in a local dataset (stored via your userscript manager).
 - **Now also works on chart pages** - automatically captures partial data for all releases visible on album/release charts.
-- Menu commands: `Set CSV output file` for auto-saves (Only compatible with chromium-based web browsers) or `Download CSV once` for a one-off export (manual download, works in Firefox).
+- Menu commands: 
+  - `Set CSV output file` for auto-saves (Only compatible with chromium-based web browsers)
+  - `Download CSV once` for a one-off export (manual download, works in Firefox)
+  - `Copy data as JSON` to copy all tracked data to clipboard in JSON format
 - Captures title, artist, release date, type, rank, ratings/reviews, primary/secondary genres, descriptors, languages, description, cover image URL, page URL, and timestamps.
 - When browsing charts, partial data (name, artist, ratings, genres) is captured; visiting individual pages provides complete data while preserving chart updates for dynamic fields (ratings, review counts).
+- **Cross-domain API**: Exposes `window.RYMCsvTracker` API for accessing tracked data from other scripts or pages (see API section below).
 
 ### rateyourmusic-song-csv-tracker.user.js
 - Same as `rateyourmusic-csv-tracker.user.js` for songs.
 
 ### rateyourmusic-film-csv-tracker.user.js
 - Same as `rateyourmusic-csv-tracker.user.js` for movies.
+- **Cross-domain API**: Exposes `window.RYMFilmCsvTracker` API for accessing tracked film data.
 
 ### glitchwave-csv-tracker.user.js
 - Same as `rateyourmusic-csv-tracker.user.js` for glitchwave games.
+- **Cross-domain API**: Exposes `window.GlitchwaveCsvTracker` API for accessing tracked game data.
+
+## Cross-Domain API Access
+
+The CSV tracker scripts expose JavaScript APIs on the `window` object, allowing other userscripts or browser console commands to access the tracked data programmatically.
+
+### Available APIs
+
+#### RateYourMusic Releases: `window.RYMCsvTracker`
+#### RateYourMusic Films: `window.RYMFilmCsvTracker`
+#### Glitchwave Games: `window.GlitchwaveCsvTracker`
+
+### API Methods
+
+All tracker APIs provide the following methods:
+
+```javascript
+// Get all tracked records as an object
+const records = await window.RYMCsvTracker.getRecords();
+
+// Get a single record by slug
+const record = await window.RYMCsvTracker.getRecord('album/the-beatles/abbey-road');
+
+// Get count of tracked records
+const count = await window.RYMCsvTracker.getRecordsCount();
+
+// Search records by name, artist, or genre
+const results = await window.RYMCsvTracker.searchRecords('radiohead');
+
+// Get all records as CSV string
+const csv = await window.RYMCsvTracker.getCsv();
+
+// Listen for data changes (returns unsubscribe function)
+const unsubscribe = window.RYMCsvTracker.onDataChange((records) => {
+  console.log('Data updated!', Object.keys(records).length, 'records');
+});
+// Later: unsubscribe();
+```
+
+### Usage Examples
+
+**Display tracked albums on a custom page:**
+```javascript
+// Get all tracked releases
+const records = await window.RYMCsvTracker.getRecords();
+const albums = Object.values(records);
+
+// Display top-rated albums
+const topRated = albums
+  .filter(a => a.ratingValue)
+  .sort((a, b) => parseFloat(b.ratingValue) - parseFloat(a.ratingValue))
+  .slice(0, 10);
+
+topRated.forEach(album => {
+  console.log(`${album.name} by ${album.artist}: ${album.ratingValue}/5`);
+});
+```
+
+**Create a custom dashboard:**
+```javascript
+// Monitor data changes and update UI
+window.RYMCsvTracker.onDataChange((records) => {
+  document.getElementById('album-count').textContent = Object.keys(records).length;
+});
+```
+
+**Export to another format:**
+```javascript
+// Get data as JSON for processing
+const records = await window.RYMCsvTracker.getRecords();
+const json = JSON.stringify(records, null, 2);
+// Process or send to external service
+```
 
 ## Sample data
 
