@@ -6,6 +6,8 @@
 // @author       dbeley
 // @match        https://open.spotify.com/*
 // @grant        GM_getValue
+// @grant        GM_setValue
+// @grant        GM_registerMenuCommand
 // @run-at       document-idle
 // ==/UserScript==
 
@@ -19,32 +21,72 @@
   let releaseDatabase = {};
   let processedElements = new WeakSet();
 
-  // Load databases from storage
+  GM_registerMenuCommand("Load RYM release CSV", () => loadCSVFile(RELEASE_STORAGE_KEY, 'releases'));
+  GM_registerMenuCommand("Load RYM song CSV", () => loadCSVFile(SONG_STORAGE_KEY, 'songs'));
+
+  function loadCSVFile(storageKey, type) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.style.display = 'none';
+    input.onchange = async (e) => {
+      try {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        const records = parseCSV(text);
+        await GM_setValue(storageKey, records);
+        input.remove();
+        alert(`Loaded ${Object.keys(records).length} ${type}`);
+        location.reload();
+      } catch (err) {
+        input.remove();
+        alert("Failed: " + err.message);
+      }
+    };
+    document.body.appendChild(input);
+    input.click();
+  }
+
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, '').trim());
+    const records = {};
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCSVLine(lines[i]);
+      const record = {};
+      headers.forEach((h, idx) => record[h] = values[idx] || '');
+      if (record.slug) records[record.slug] = record;
+    }
+    return records;
+  }
+
+  function parseCSVLine(line) {
+    const values = [];
+    let current = '', inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"' && line[i+1] === '"') { current += '"'; i++; }
+      else if (c === '"') inQuotes = !inQuotes;
+      else if (c === ',' && !inQuotes) { values.push(current); current = ''; }
+      else current += c;
+    }
+    values.push(current);
+    return values;
+  }
+
   async function loadDatabases() {
     try {
-      // Try localStorage first (cross-script access), fall back to GM storage
-      const songData = localStorage.getItem(SONG_STORAGE_KEY);
-      const releaseData = localStorage.getItem(RELEASE_STORAGE_KEY);
-
-      if (songData) {
-        songDatabase = JSON.parse(songData);
-      } else {
-        songDatabase = (await GM_getValue(SONG_STORAGE_KEY, {})) || {};
+      songDatabase = (await GM_getValue(SONG_STORAGE_KEY, {})) || {};
+      releaseDatabase = (await GM_getValue(RELEASE_STORAGE_KEY, {})) || {};
+      const sc = Object.keys(songDatabase).length;
+      const rc = Object.keys(releaseDatabase).length;
+      console.info(`[spotify-rym-ratings] Loaded ${sc} songs and ${rc} releases`);
+      if (sc === 0 && rc === 0) {
+        console.warn("[spotify-rym-ratings] No data. Use 'Load RYM CSV' menu commands.");
       }
-
-      if (releaseData) {
-        releaseDatabase = JSON.parse(releaseData);
-      } else {
-        releaseDatabase = (await GM_getValue(RELEASE_STORAGE_KEY, {})) || {};
-      }
-
-      console.info(
-        `[spotify-rym-ratings] Loaded ${Object.keys(songDatabase).length} songs and ${
-          Object.keys(releaseDatabase).length
-        } releases from RYM database`
-      );
     } catch (err) {
-      console.error("[spotify-rym-ratings] Failed to load databases:", err);
+      console.error("[spotify-rym-ratings] Failed to load:", err);
     }
   }
 
