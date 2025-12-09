@@ -306,6 +306,8 @@
   async function saveRecords(records) {
     try {
       await GM_setValue(STORAGE_KEY, records);
+      // Also save to localStorage for cross-script access
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
     } catch (err) {
       console.error("[rateyourmusic-csv] Unable to persist records", err);
     }

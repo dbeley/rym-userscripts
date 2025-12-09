@@ -22,8 +22,22 @@
   // Load databases from storage
   async function loadDatabases() {
     try {
-      songDatabase = (await GM_getValue(SONG_STORAGE_KEY, {})) || {};
-      releaseDatabase = (await GM_getValue(RELEASE_STORAGE_KEY, {})) || {};
+      // Try localStorage first (cross-script access), fall back to GM storage
+      const songData = localStorage.getItem(SONG_STORAGE_KEY);
+      const releaseData = localStorage.getItem(RELEASE_STORAGE_KEY);
+
+      if (songData) {
+        songDatabase = JSON.parse(songData);
+      } else {
+        songDatabase = (await GM_getValue(SONG_STORAGE_KEY, {})) || {};
+      }
+
+      if (releaseData) {
+        releaseDatabase = JSON.parse(releaseData);
+      } else {
+        releaseDatabase = (await GM_getValue(RELEASE_STORAGE_KEY, {})) || {};
+      }
+
       console.info(
         `[youtube-music-rym-ratings] Loaded ${Object.keys(songDatabase).length} songs and ${
           Object.keys(releaseDatabase).length
