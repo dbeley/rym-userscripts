@@ -102,11 +102,20 @@
     const rating = match.ratingValue || "?";
     link.textContent = `RYM ${rating}`;
     link.title = buildTooltip(match);
+    link.style.cursor = match.url ? "pointer" : "default";
     if (match.url) {
       link.href = match.url;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.style.textDecoration = "none";
+      // Keep Navidrome row handlers from swallowing the click so the link opens.
+      link.addEventListener(
+        "click",
+        (ev) => {
+          ev.stopPropagation();
+        },
+        true
+      );
     }
     return link;
   }
