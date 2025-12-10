@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         RateYourMusic Song CSV Tracker
 // @namespace    https://github.com/dbeley/rym-userscripts
-// @version      1.0.0
+// @version      1.1.0
 // @description  Capture song metadata on RateYourMusic song and chart pages and keep a CSV in sync (auto-save or manual download).
 // @author       dbeley
 // @match        https://rateyourmusic.com/song/*
 // @match        https://rateyourmusic.com/charts/*/song/*
+// @match        https://rateyourmusic.com/artist/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
@@ -19,6 +20,18 @@
   const DB_NAME = "rateyourmusic-song-csv";
   const STORE_NAME = "handles";
   const FILE_KEY = "csv-output-songs";
+  const COMPANION_FIELDS = [
+    "slug",
+    "name",
+    "artist",
+    "album",
+    "ratingValue",
+    "maxRating",
+    "ratingCount",
+    "reviewCount",
+    "url",
+    "updatedAt",
+  ];
 
   GM_registerMenuCommand("Set song CSV output file", () => {
     pickCsvFile(true).catch(console.error);
@@ -38,6 +51,20 @@
         }
         console.info(
           `[rateyourmusic-song-csv] Recorded ${records.length} songs from chart page`
+        );
+        await writeCsvToDisk();
+      }
+      return;
+    }
+
+    if (isArtistSongsPage()) {
+      const records = extractArtistSongRecords();
+      if (records.length > 0) {
+        for (const record of records) {
+          await upsertRecord(record);
+        }
+        console.info(
+          `[rateyourmusic-song-csv] Recorded ${records.length} songs from artist page`
         );
         await writeCsvToDisk();
       }
@@ -259,6 +286,66 @@
     return records;
   }
 
+  function isArtistSongsPage() {
+    return !!document.querySelector(".page_artist_songs li.page_artist_songs_song");
+  }
+
+  function extractArtistSongRecords() {
+    const items = document.querySelectorAll(".page_artist_songs li.page_artist_songs_song");
+    const artist =
+      document.querySelector(".artist_name_hdr")?.textContent?.trim() ||
+      document.querySelector(".page_artist h1")?.textContent?.trim() ||
+      "";
+    const records = [];
+
+    items.forEach((item) => {
+      const link = item.querySelector("a.song");
+      if (!link?.href) return;
+
+      const url = new URL(link.href, location.href).href;
+      const slug = url.split("/").filter(Boolean).pop();
+      if (!slug) return;
+
+      const name =
+        link.querySelector(".ui_name_locale_original")?.textContent.trim() ||
+        link.textContent.trim();
+
+      const ratingValue = cleanNumber(
+        item.querySelector(".page_artist_tracks_track_stats_rating")?.textContent
+      );
+      const ratingCount = cleanNumber(
+        item.querySelector(".page_artist_tracks_track_stats_count")?.textContent
+      );
+
+      const now = new Date().toISOString();
+
+      records.push({
+        slug,
+        name,
+        artist,
+        album: "",
+        albumUrl: "",
+        type: "Song",
+        releaseDate: "",
+        rank: "",
+        ratingValue: ratingValue ?? "",
+        maxRating: "",
+        ratingCount: ratingCount ?? "",
+        reviewCount: "",
+        primaryGenres: "",
+        secondaryGenres: "",
+        descriptors: "",
+        image: "",
+        description: "",
+        url,
+        updatedAt: now,
+        isPartial: true,
+      });
+    });
+
+    return records;
+  }
+
   async function upsertRecord(record) {
     const records = await loadRecords();
     const existing = records[record.slug] || {};
@@ -308,9 +395,34 @@
   async function saveRecords(records) {
     try {
       await GM_setValue(STORAGE_KEY, records);
+      mirrorForCompanions(records, COMPANION_FIELDS);
     } catch (err) {
       console.error("[rateyourmusic-song-csv] Unable to persist records", err);
     }
+  }
+
+  function mirrorForCompanions(records, fields) {
+    try {
+      const compact = compactRecords(records, fields);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
+    } catch (storageErr) {
+      console.warn("[rateyourmusic-song-csv] Unable to mirror records to localStorage", storageErr);
+    }
+  }
+
+  function compactRecords(records, fields) {
+    const compact = {};
+    const entries = Object.entries(records || {});
+    for (const [slug, record] of entries) {
+      if (!record) continue;
+      const entry = { slug };
+      for (const key of fields) {
+        if (key === "slug") continue;
+        if (record[key] !== undefined) entry[key] = record[key];
+      }
+      compact[slug] = entry;
+    }
+    return compact;
   }
 
   function buildCsv(records) {

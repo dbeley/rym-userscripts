@@ -19,6 +19,15 @@
   const DB_NAME = "glitchwave-csv";
   const STORE_NAME = "handles";
   const FILE_KEY = "csv-output";
+  const COMPANION_FIELDS = [
+    "slug",
+    "name",
+    "ratingValue",
+    "ratingCount",
+    "reviewCount",
+    "url",
+    "updatedAt",
+  ];
 
   GM_registerMenuCommand("Set CSV output file", () => {
     pickCsvFile(true).catch(console.error);
@@ -239,9 +248,34 @@
   async function saveRecords(records) {
     try {
       await GM_setValue(STORAGE_KEY, records);
+      mirrorForCompanions(records, COMPANION_FIELDS);
     } catch (err) {
       console.error("[glitchwave-csv] Unable to persist records", err);
     }
+  }
+
+  function mirrorForCompanions(records, fields) {
+    try {
+      const compact = compactRecords(records, fields);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
+    } catch (storageErr) {
+      console.warn("[glitchwave-csv] Unable to mirror records to localStorage", storageErr);
+    }
+  }
+
+  function compactRecords(records, fields) {
+    const compact = {};
+    const entries = Object.entries(records || {});
+    for (const [slug, record] of entries) {
+      if (!record) continue;
+      const entry = { slug };
+      for (const key of fields) {
+        if (key === "slug") continue;
+        if (record[key] !== undefined) entry[key] = record[key];
+      }
+      compact[slug] = entry;
+    }
+    return compact;
   }
 
   function buildCsv(records) {

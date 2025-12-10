@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         RateYourMusic Film CSV Tracker
 // @namespace    https://github.com/dbeley/rym-userscripts
-// @version      1.1.0
+// @version      1.2.0
 // @description  Capture film metadata on RateYourMusic pages and keep a CSV in sync (auto-save or manual download).
 // @author       dbeley
 // @match        https://rateyourmusic.com/film/*
+// @match        https://rateyourmusic.com/films/*
 // @match        https://rateyourmusic.com/charts/*
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -19,6 +20,16 @@
   const DB_NAME = "rateyourmusic-film-csv";
   const STORE_NAME = "handles";
   const FILE_KEY = "csv-output";
+  const COMPANION_FIELDS = [
+    "slug",
+    "name",
+    "altTitle",
+    "ratingValue",
+    "ratingCount",
+    "reviewCount",
+    "url",
+    "updatedAt",
+  ];
 
   GM_registerMenuCommand("Set CSV output file", () => {
     pickCsvFile(true).catch(console.error);
@@ -30,8 +41,10 @@
   main().catch(console.error);
 
   async function main() {
+    const path = window.location.pathname;
+
     // Check if we're on a chart page
-    if (window.location.pathname.includes('/charts/')) {
+    if (path.includes("/charts/")) {
       const records = extractChartRecords();
       if (records.length > 0) {
         for (const record of records) {
@@ -39,6 +52,21 @@
         }
         console.info(
           `[rateyourmusic-film-csv] Recorded ${records.length} films from chart page`
+        );
+        await writeCsvToDisk();
+      }
+      return;
+    }
+
+    // Filmography page
+    if (path.startsWith("/films/")) {
+      const records = extractFilmographyRecords();
+      if (records.length > 0) {
+        for (const record of records) {
+          await upsertRecord(record);
+        }
+        console.info(
+          `[rateyourmusic-film-csv] Recorded ${records.length} films from filmography page`
         );
         await writeCsvToDisk();
       }
@@ -230,6 +258,77 @@
     return records;
   }
 
+  function extractFilmographyRecords() {
+    const list =
+      document.querySelector("#filmography ul.films") ||
+      document.querySelector("#films.films");
+    if (!list) return [];
+
+    const items = list.querySelectorAll("li");
+    const records = [];
+
+    items.forEach((item) => {
+      const link = item.querySelector("a.film");
+      if (!link) return;
+
+      const url = new URL(link.href, location.href).href;
+      const slug = new URL(url).pathname.split("/").filter(Boolean).pop();
+      if (!slug) return;
+
+      const altNode = link.querySelector("span");
+      const altTitle =
+        altNode?.textContent?.replace(/^\[|\]$/g, "").trim() || "";
+      const name =
+        link.childNodes?.[0]?.textContent?.trim() ||
+        link.textContent.replace(altNode?.textContent || "", "").trim() ||
+        "";
+
+      const releaseNode = item.querySelector(".film_subline span[title]");
+      const releaseDate =
+        releaseNode?.getAttribute("title")?.trim() ||
+        releaseNode?.textContent?.trim() ||
+        "";
+
+      const ratingValue =
+        item.querySelector(".disco_avg_rating")?.textContent?.trim() || "";
+      const ratingCount =
+        item.querySelector(".disco_ratings")?.textContent?.trim() || "";
+      const reviewCount =
+        item.querySelector(".disco_reviews")?.textContent?.trim() || "";
+      const image = getBackgroundUrl(item.querySelector(".film_rel_img"));
+
+      const now = new Date().toISOString();
+
+      records.push({
+        slug,
+        name,
+        altTitle,
+        directors: "",
+        cast: "",
+        releaseDate,
+        runtime: "",
+        rank: "",
+        ratingValue,
+        maxRating: "",
+        ratingCount,
+        reviewCount,
+        primaryGenres: "",
+        secondaryGenres: "",
+        descriptors: "",
+        languages: "",
+        studios: "",
+        productionCompanies: "",
+        image,
+        description: "",
+        url,
+        updatedAt: now,
+        isPartial: true,
+      });
+    });
+
+    return records;
+  }
+
   function collectFilmInfo() {
     const rows = document.querySelectorAll(".film_info tr, .film_infox tr");
     const map = {};
@@ -252,6 +351,16 @@
       .map((node) => node.textContent.trim())
       .filter(Boolean)
       .join("; ");
+  }
+
+  function getBackgroundUrl(node) {
+    const bg = node?.style?.backgroundImage || "";
+    const match = bg.match(/url\(["']?(.*?)["']?\)/);
+    if (!match) return "";
+    const raw = match[1];
+    if (raw.startsWith("//")) return `https:${raw}`;
+    if (raw.startsWith("http")) return raw;
+    return raw;
   }
 
   async function upsertRecord(record) {
@@ -309,9 +418,34 @@
   async function saveRecords(records) {
     try {
       await GM_setValue(STORAGE_KEY, records);
+      mirrorForCompanions(records, COMPANION_FIELDS);
     } catch (err) {
       console.error("[rateyourmusic-film-csv] Unable to persist records", err);
     }
+  }
+
+  function mirrorForCompanions(records, fields) {
+    try {
+      const compact = compactRecords(records, fields);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
+    } catch (storageErr) {
+      console.warn("[rateyourmusic-film-csv] Unable to mirror records to localStorage", storageErr);
+    }
+  }
+
+  function compactRecords(records, fields) {
+    const compact = {};
+    const entries = Object.entries(records || {});
+    for (const [slug, record] of entries) {
+      if (!record) continue;
+      const entry = { slug };
+      for (const key of fields) {
+        if (key === "slug") continue;
+        if (record[key] !== undefined) entry[key] = record[key];
+      }
+      compact[slug] = entry;
+    }
+    return compact;
   }
 
   function buildCsv(records) {

@@ -1,11 +1,14 @@
 // ==UserScript==
 // @name         RateYourMusic Release CSV Tracker
 // @namespace    https://github.com/dbeley/rym-userscripts
-// @version      1.1.0
+// @version      1.3.0
 // @description  Capture release metadata on RateYourMusic pages and keep a CSV in sync (auto-save or manual download).
 // @author       dbeley
+// @match        https://rateyourmusic.com
+// @match        https://rateyourmusic.com/
 // @match        https://rateyourmusic.com/release/*
 // @match        https://rateyourmusic.com/charts/*
+// @match        https://rateyourmusic.com/artist/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
@@ -19,6 +22,17 @@
   const DB_NAME = "rateyourmusic-csv";
   const STORE_NAME = "handles";
   const FILE_KEY = "csv-output";
+  const COMPANION_FIELDS = [
+    "slug",
+    "name",
+    "artist",
+    "ratingValue",
+    "maxRating",
+    "ratingCount",
+    "reviewCount",
+    "url",
+    "updatedAt",
+  ];
 
   GM_registerMenuCommand("Set CSV output file", () => {
     pickCsvFile(true).catch(console.error);
@@ -30,8 +44,22 @@
   main().catch(console.error);
 
   async function main() {
+    if (isHomePage()) {
+      const records = extractFrontpageNewReleases();
+      if (records.length > 0) {
+        for (const record of records) {
+          await upsertRecord(record);
+        }
+        console.info(
+          `[rateyourmusic-csv] Recorded ${records.length} releases from front page`
+        );
+        await writeCsvToDisk();
+      }
+      return;
+    }
+
     // Check if we're on a chart page
-    if (window.location.pathname.includes('/charts/')) {
+    if (window.location.pathname.includes("/charts/")) {
       const records = extractChartRecords();
       if (records.length > 0) {
         for (const record of records) {
@@ -39,6 +67,20 @@
         }
         console.info(
           `[rateyourmusic-csv] Recorded ${records.length} releases from chart page`
+        );
+        await writeCsvToDisk();
+      }
+      return;
+    }
+
+    if (isDiscographyPage()) {
+      const records = extractDiscographyRecords();
+      if (records.length > 0) {
+        for (const record of records) {
+          await upsertRecord(record);
+        }
+        console.info(
+          `[rateyourmusic-csv] Recorded ${records.length} releases from discography page`
         );
         await writeCsvToDisk();
       }
@@ -54,6 +96,85 @@
       `[rateyourmusic-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`
     );
     await writeCsvToDisk();
+  }
+
+  function isHomePage() {
+    return (
+      window.location.pathname === "/" &&
+      (document.documentElement.id === "page_home" ||
+        document.documentElement.classList.contains("page_home"))
+    );
+  }
+
+  function extractFrontpageNewReleases() {
+    const items = document.querySelectorAll(".newreleases_itembox");
+    const records = [];
+
+    items.forEach((item) => {
+      const link = item.querySelector(".newreleases_item_title");
+      if (!link?.href) return;
+
+      const urlObj = new URL(link.href, location.href);
+      const url = urlObj.href;
+      const slug = urlObj.pathname.split("/").filter(Boolean).pop();
+      if (!slug) return;
+
+      const name = link.textContent.trim();
+      const artist =
+        item.querySelector(".newreleases_item_artist a")?.textContent.trim() ||
+        "";
+      const releaseDate =
+        item.querySelector(".newreleases_item_releasedate")?.textContent.trim() ||
+        "";
+      const ratingValue = sanitizeDashValue(
+        item.querySelector(".newreleases_avg_rating_stat")?.textContent
+      );
+      const ratingCount = sanitizeDashValue(
+        item.querySelector(".newreleases_ratings_stat")?.textContent
+      );
+
+      const primaryGenres = Array.from(
+        item.querySelectorAll(".newreleases_item_genres")
+      )
+        .map((node) => node.textContent.trim().replace(/,\s*$/, ""))
+        .filter(Boolean)
+        .join("; ");
+
+      const imageNode = item.querySelector(".newreleases_item_artbox img");
+      let image =
+        imageNode?.getAttribute("src") ||
+        imageNode?.getAttribute("data-src") ||
+        "";
+      if (image.startsWith("//")) {
+        image = `${location.protocol}${image}`;
+      }
+
+      const now = new Date().toISOString();
+
+      records.push({
+        slug,
+        name,
+        artist,
+        type: deriveReleaseTypeFromUrl(urlObj),
+        releaseDate,
+        rank: "",
+        ratingValue,
+        maxRating: "",
+        ratingCount,
+        reviewCount: "",
+        primaryGenres,
+        secondaryGenres: "",
+        descriptors: "",
+        languages: "",
+        description: "",
+        image,
+        url,
+        updatedAt: now,
+        isPartial: true,
+      });
+    });
+
+    return records;
   }
 
   function extractReleaseRecord() {
@@ -130,61 +251,75 @@
   }
 
   function extractChartRecords() {
-    const chartItems = document.querySelectorAll('.page_charts_section_charts_item.object_release');
+    const chartItems = document.querySelectorAll(
+      ".page_charts_section_charts_item.object_release"
+    );
     const records = [];
 
     chartItems.forEach((item) => {
-      const link = item.querySelector('.page_charts_section_charts_item_link.release');
+      const link = item.querySelector(".page_charts_section_charts_item_link.release");
       if (!link) return;
 
       const url = new URL(link.href, location.href).href;
-      const slug = new URL(url).pathname.split('/').filter(Boolean).pop();
+      const slug = new URL(url).pathname.split("/").filter(Boolean).pop();
       if (!slug) return;
 
       // Extract name
-      const nameNode = link.querySelector('.ui_name_locale_original');
+      const nameNode = link.querySelector(".ui_name_locale_original");
       const name = nameNode ? nameNode.textContent.trim() : link.textContent.trim();
 
       // Extract artist
-      const artistLink = item.querySelector('.page_charts_section_charts_item_credited_links_primary a.artist');
-      const artistNameNode = artistLink?.querySelector('.ui_name_locale_original');
-      const artist = artistNameNode ? artistNameNode.textContent.trim() : (artistLink?.textContent.trim() || "");
+      const artistLink = item.querySelector(
+        ".page_charts_section_charts_item_credited_links_primary a.artist"
+      );
+      const artistNameNode = artistLink?.querySelector(".ui_name_locale_original");
+      const artist = artistNameNode
+        ? artistNameNode.textContent.trim()
+        : artistLink?.textContent.trim() || "";
 
       // Extract release date
-      const dateNode = item.querySelector('.page_charts_section_charts_item_date span');
+      const dateNode = item.querySelector(".page_charts_section_charts_item_date span");
       const releaseDate = dateNode ? dateNode.textContent.trim() : "";
 
       // Extract type
-      const typeNode = item.querySelector('.page_charts_section_charts_item_release_type');
+      const typeNode = item.querySelector(".page_charts_section_charts_item_release_type");
       const type = typeNode ? typeNode.textContent.trim() : "";
 
       // Extract rating info
-      const ratingNode = item.querySelector('.page_charts_section_charts_item_details_average_num');
+      const ratingNode = item.querySelector(
+        ".page_charts_section_charts_item_details_average_num"
+      );
       const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
 
-      const ratingCountNode = item.querySelector('.page_charts_section_charts_item_details_ratings .abbr');
+      const ratingCountNode = item.querySelector(
+        ".page_charts_section_charts_item_details_ratings .abbr"
+      );
       const ratingCount = ratingCountNode ? ratingCountNode.textContent.trim() : "";
 
-      const reviewCountNode = item.querySelector('.page_charts_section_charts_item_details_reviews .abbr');
+      const reviewCountNode = item.querySelector(
+        ".page_charts_section_charts_item_details_reviews .abbr"
+      );
       const reviewCount = reviewCountNode ? reviewCountNode.textContent.trim() : "";
 
       // Extract genres
       const primaryGenres = extractList(
-        item.querySelectorAll('.page_charts_section_charts_item_genres_primary a.genre')
+        item.querySelectorAll(".page_charts_section_charts_item_genres_primary a.genre")
       );
       const secondaryGenres = extractList(
-        item.querySelectorAll('.page_charts_section_charts_item_genres_secondary a.genre')
+        item.querySelectorAll(".page_charts_section_charts_item_genres_secondary a.genre")
       );
 
       // Extract descriptors
-      const descriptorNodes = item.querySelectorAll('.page_charts_section_charts_item_genre_descriptors .comma_separated');
+      const descriptorNodes = item.querySelectorAll(
+        ".page_charts_section_charts_item_genre_descriptors .comma_separated"
+      );
       const descriptors = Array.from(descriptorNodes)
-        .map(node => node.textContent.trim())
+        .map((node) => node.textContent.trim())
         .filter(Boolean)
-        .join('; ');
+        .join("; ");
 
       // Extract image
-      const imgNode = item.querySelector('.page_charts_section_charts_item_image img');
+      const imgNode = item.querySelector(".page_charts_section_charts_item_image img");
       const image = imgNode ? imgNode.src : "";
 
       const now = new Date().toISOString();
@@ -213,6 +348,105 @@
     });
 
     return records;
+  }
+
+  function isDiscographyPage() {
+    return !!document.querySelector("#discography .disco_release");
+  }
+
+  function extractDiscographyRecords() {
+    const entries = document.querySelectorAll("#discography .disco_release");
+    const artist =
+      document.querySelector(".artist_name_hdr")?.textContent?.trim() ||
+      document.querySelector(".page_artist h1")?.textContent?.trim() ||
+      "";
+    const records = [];
+
+    entries.forEach((item) => {
+      const link = item.querySelector(".disco_mainline a.album");
+      if (!link?.href) return;
+
+      const urlObj = new URL(link.href, location.href);
+      const url = urlObj.href;
+      const slug = urlObj.pathname.split("/").filter(Boolean).pop();
+      if (!slug) return;
+
+      const name = link.textContent.trim();
+
+      const releaseDateNode = item.querySelector(".disco_subline span");
+      const releaseDate =
+        releaseDateNode?.getAttribute("title")?.trim() ||
+        releaseDateNode?.textContent?.trim() ||
+        "";
+
+      const ratingValue = sanitizeDashValue(
+        item.querySelector(".disco_avg_rating")?.textContent
+      );
+      const ratingCount = sanitizeDashValue(
+        item.querySelector(".disco_ratings")?.textContent
+      );
+      const reviewCount = sanitizeDashValue(
+        item.querySelector(".disco_reviews")?.textContent
+      );
+
+      const imageNode = item.querySelector(".disco_info img");
+      const image = pickImageSource(imageNode);
+
+      const now = new Date().toISOString();
+
+      records.push({
+        slug,
+        name,
+        artist,
+        type: deriveReleaseTypeFromUrl(urlObj),
+        releaseDate,
+        rank: "",
+        ratingValue,
+        maxRating: "",
+        ratingCount,
+        reviewCount,
+        primaryGenres: "",
+        secondaryGenres: "",
+        descriptors: "",
+        languages: "",
+        description: "",
+        image,
+        url,
+        updatedAt: now,
+        isPartial: true,
+      });
+    });
+
+    return records;
+  }
+
+  function deriveReleaseTypeFromUrl(urlInput) {
+    try {
+      const urlObj = urlInput instanceof URL ? urlInput : new URL(urlInput, location.href);
+      const parts = urlObj.pathname.split("/").filter(Boolean);
+      const releaseIndex = parts.indexOf("release");
+      if (releaseIndex >= 0 && parts[releaseIndex + 1]) {
+        return parts[releaseIndex + 1];
+      }
+    } catch (_) {
+      // ignore parsing errors
+    }
+    return "";
+  }
+
+  function sanitizeDashValue(value) {
+    if (!value) return "";
+    const trimmed = String(value).trim();
+    return trimmed === "-" ? "" : trimmed;
+  }
+
+  function pickImageSource(imgNode) {
+    if (!imgNode) return "";
+    if (imgNode.srcset) {
+      const firstSrc = imgNode.srcset.split(",")[0]?.trim().split(" ")[0];
+      if (firstSrc) return firstSrc;
+    }
+    return imgNode.getAttribute("src") || "";
   }
 
   function collectAlbumInfo() {
@@ -306,15 +540,34 @@
   async function saveRecords(records) {
     try {
       await GM_setValue(STORAGE_KEY, records);
-      // Mirror into localStorage so companion tools (e.g., a browser extension) can read the cache.
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-      } catch (storageErr) {
-        console.warn("[rateyourmusic-csv] Unable to mirror records to localStorage", storageErr);
-      }
+      mirrorForCompanions(records, COMPANION_FIELDS);
     } catch (err) {
       console.error("[rateyourmusic-csv] Unable to persist records", err);
     }
+  }
+
+  function mirrorForCompanions(records, fields) {
+    try {
+      const compact = compactRecords(records, fields);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(compact));
+    } catch (storageErr) {
+      console.warn("[rateyourmusic-csv] Unable to mirror records to localStorage", storageErr);
+    }
+  }
+
+  function compactRecords(records, fields) {
+    const compact = {};
+    const entries = Object.entries(records || {});
+    for (const [slug, record] of entries) {
+      if (!record) continue;
+      const entry = { slug };
+      for (const key of fields) {
+        if (key === "slug") continue;
+        if (record[key] !== undefined) entry[key] = record[key];
+      }
+      compact[slug] = entry;
+    }
+    return compact;
   }
 
   function buildCsv(records) {
