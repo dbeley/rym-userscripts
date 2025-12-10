@@ -39,10 +39,11 @@
       node.querySelector("#video-title")?.textContent ||
       node.querySelector("yt-formatted-string")?.textContent ||
       "";
-    const artist =
+    const artistRaw =
       node.querySelector("ytd-channel-name a")?.textContent ||
       node.querySelector("#channel-name a")?.textContent ||
       "";
+    const artist = cleanArtist(artistRaw);
 
     const key = keyFor(artist, title);
     if (!key.trim()) return;
@@ -77,6 +78,11 @@
     if (match.updatedAt) bits.push(`Cached: ${match.updatedAt}`);
     if (match.url) bits.push(`Source: ${match.url}`);
     return bits.join(" · ");
+  }
+
+  function cleanArtist(input) {
+    if (!input) return "";
+    return input.replace(/\s*-\s*topic$/i, "").trim();
   }
 
   function injectStyles() {
