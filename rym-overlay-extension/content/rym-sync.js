@@ -2,11 +2,6 @@
   const STORAGE_KEY = "rateyourmusic-csv::records";
   const MAX_RETRIES = 12;
   const RETRY_DELAY_MS = 500;
-  const sessionFlag = "__rym_ext_synced";
-
-  if (sessionStorage.getItem(sessionFlag)) return;
-  sessionStorage.setItem(sessionFlag, "1");
-
   syncFromLocal().catch((err) =>
     console.warn("[rym-overlay] sync failed", err)
   );
@@ -26,6 +21,14 @@
       return;
     }
 
+    console.debug("[rym-overlay] sending cache update", {
+      entries: Array.isArray(parsed)
+        ? parsed.length
+        : parsed
+        ? Object.keys(parsed).length
+        : 0,
+      source: location.href,
+    });
     await browser.runtime.sendMessage({
       type: "rym-cache-update",
       records: parsed,
@@ -36,6 +39,13 @@
   async function waitForRecords() {
     for (let i = 0; i < MAX_RETRIES; i++) {
       const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        console.debug("[rym-overlay] found records in localStorage", {
+          length: raw.length,
+          attempt: i + 1,
+        });
+        return raw;
+      }
       if (raw) return raw;
       await delay(RETRY_DELAY_MS);
     }

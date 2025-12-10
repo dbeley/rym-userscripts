@@ -43,11 +43,10 @@
     {
       "matches": [
         "http://localhost/*",
-        "http://localhost:*/*",
         "http://127.0.0.1/*",
-        "http://127.0.0.1:*/*",
-        "http://10.*/*",
-        "http://192.168.*/*"
+        "http://navidrome.docker-era.home/*",
+        "http://*/navidrome/*",
+        "https://*/navidrome/*"
       ],
       "js": ["shared/normalize.js", "content/navidrome-overlay.js"],
       "run_at": "document_idle"

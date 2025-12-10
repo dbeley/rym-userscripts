@@ -8,14 +8,26 @@
     if (!message || !message.type) return;
 
     if (message.type === "rym-cache-update") {
+      console.debug("[rym-overlay][bg] received cache update", {
+        source: message.source || "unknown",
+        entries: Array.isArray(message.records)
+          ? message.records.length
+          : message.records
+          ? Object.keys(message.records).length
+          : 0,
+      });
       return handleCacheUpdate(message.records, message.source || "unknown");
     }
 
     if (message.type === "rym-cache-request") {
+      console.debug("[rym-overlay][bg] cache request received");
       return loadCache();
     }
 
     if (message.type === "rym-lookup") {
+      console.debug("[rym-overlay][bg] lookup request", {
+        keys: (message.keys || []).length,
+      });
       return handleLookup(message.keys || []);
     }
   });
@@ -29,6 +41,11 @@
       source,
     };
     cache = next;
+    console.debug("[rym-overlay][bg] cache indexed", {
+      entries: entries.length,
+      source,
+      lastSync: next.lastSync,
+    });
     await browser.storage.local.set({ [CACHE_KEY]: next });
     return { ok: true, count: entries.length };
   }
@@ -50,6 +67,10 @@
     if (cache) return cache;
     const stored = await browser.storage.local.get(CACHE_KEY);
     cache = stored[CACHE_KEY] || null;
+    console.debug("[rym-overlay][bg] loadCache", {
+      cached: Boolean(cache),
+      entries: cache?.entries?.length || Object.keys(cache?.index || {}).length || 0,
+    });
     return cache;
   }
 

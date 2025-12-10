@@ -24,6 +24,7 @@
       "ytd-video-renderer",
       "ytd-compact-video-renderer",
       "ytd-rich-item-renderer",
+      "yt-lockup-view-model",
     ];
     const nodes = document.querySelectorAll(
       selectors.map((s) => `${s}:not([data-rym-annotated])`).join(",")
@@ -38,13 +39,15 @@
     const titleRaw =
       node.querySelector("#video-title")?.textContent ||
       node.querySelector("yt-formatted-string")?.textContent ||
+      node.querySelector(".yt-lockup-metadata-view-model__title")?.textContent ||
       "";
     const artistRaw =
       node.querySelector("ytd-channel-name a")?.textContent ||
       node.querySelector("#channel-name a")?.textContent ||
+      node.querySelector(".yt-lockup-metadata-view-model__metadata a")?.textContent ||
       "";
     const artist = cleanArtist(artistRaw);
-    const titleCandidates = buildTitleCandidates(titleRaw);
+    const titleCandidates = buildTitleCandidates(titleRaw, artist);
 
     let match = null;
     let usedTitle = null;
@@ -98,21 +101,30 @@
     return input.replace(/\s*-\s*topic$/i, "").trim();
   }
 
-  function buildTitleCandidates(raw) {
+  function buildTitleCandidates(raw, artist) {
     const base = (raw || "").trim();
-    const cleaned = cleanTitle(base);
+    const cleaned = cleanTitle(base, artist);
     const simpler = cleaned.split(/[-|•–—]/)[0]?.trim() || cleaned;
-    const candidates = [base, cleaned, simpler].filter(Boolean);
+    const noArtist =
+      artist && cleaned.toLowerCase().startsWith(artist.toLowerCase() + " -")
+        ? cleaned.slice(artist.length + 1).replace(/^[-|•–—]\s*/, "").trim()
+        : cleaned;
+    const candidates = [base, cleaned, simpler, noArtist].filter(Boolean);
     return [...new Set(candidates)];
   }
 
-  function cleanTitle(input) {
+  function cleanTitle(input, artist) {
     if (!input) return "";
     let t = input;
     t = t.replace(/\[[^\]]*\]/g, "");
     t = t.replace(/\([^)]*(official|video|audio|album|visuali[sz]er|lyrics?|explicit|full\s+album)[^)]*\)/gi, "");
     t = t.replace(/\b(official\s+(music\s+)?video|official\s+audio|lyric\s+video|lyrics?|visuali[sz]er|full\s+album|album\s+stream|album\s+visuali[sz]er)\b/gi, "");
     t = t.replace(/\s*(\||-|\u2013|\u2014|•)\s*(official.*|full\s+album.*|album\s+visuali[sz]er.*|visuali[sz]er.*|lyrics?.*|lyric\s+video.*)$/i, "");
+    if (artist) {
+      const prefix = artist.trim();
+      const pattern = new RegExp(`^${prefix}\\s*[-|•–—]\\s*`, "i");
+      t = t.replace(pattern, "");
+    }
     return t.trim();
   }
 
