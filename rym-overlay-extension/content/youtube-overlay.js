@@ -35,7 +35,7 @@
   }
 
   function annotate(node) {
-    const title =
+    const titleRaw =
       node.querySelector("#video-title")?.textContent ||
       node.querySelector("yt-formatted-string")?.textContent ||
       "";
@@ -44,11 +44,24 @@
       node.querySelector("#channel-name a")?.textContent ||
       "";
     const artist = cleanArtist(artistRaw);
+    const titleCandidates = buildTitleCandidates(titleRaw);
 
-    const key = keyFor(artist, title);
-    if (!key.trim()) return;
-
-    const match = cache.index[key];
+    let match = null;
+    let usedTitle = null;
+    for (const title of titleCandidates) {
+      const key = keyFor(artist, title);
+      if (!key.trim()) continue;
+      match = cache.index[key] || null;
+      usedTitle = title;
+      console.debug("[rym-overlay][youtube] lookup", {
+        key,
+        title,
+        artist,
+        cacheSize: Object.keys(cache.index || {}).length,
+        found: Boolean(match),
+      });
+      if (match) break;
+    }
     if (!match) return;
 
     const anchor = node.querySelector("#video-title") || node.querySelector("yt-formatted-string");
@@ -83,6 +96,24 @@
   function cleanArtist(input) {
     if (!input) return "";
     return input.replace(/\s*-\s*topic$/i, "").trim();
+  }
+
+  function buildTitleCandidates(raw) {
+    const base = (raw || "").trim();
+    const cleaned = cleanTitle(base);
+    const simpler = cleaned.split(/[-|•–—]/)[0]?.trim() || cleaned;
+    const candidates = [base, cleaned, simpler].filter(Boolean);
+    return [...new Set(candidates)];
+  }
+
+  function cleanTitle(input) {
+    if (!input) return "";
+    let t = input;
+    t = t.replace(/\[[^\]]*\]/g, "");
+    t = t.replace(/\([^)]*(official|video|audio|album|visuali[sz]er|lyrics?|explicit|full\s+album)[^)]*\)/gi, "");
+    t = t.replace(/\b(official\s+(music\s+)?video|official\s+audio|lyric\s+video|lyrics?|visuali[sz]er|full\s+album|album\s+stream|album\s+visuali[sz]er)\b/gi, "");
+    t = t.replace(/\s*(\||-|\u2013|\u2014|•)\s*(official.*|full\s+album.*|album\s+visuali[sz]er.*|visuali[sz]er.*|lyrics?.*|lyric\s+video.*)$/i, "");
+    return t.trim();
   }
 
   function injectStyles() {

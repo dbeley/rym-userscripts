@@ -30,10 +30,11 @@
   }
 
   function annotateRow(row) {
-    const title = (
+    const titleRaw = (
       row.querySelector('[data-testid="internal-track-link"]') ||
       row.querySelector('[data-testid="tracklist-row"] span')
     )?.textContent?.trim() || "";
+    const title = cleanTitle(titleRaw);
     const artistRaw =
       row.querySelector('a[href*="/artist/"]')?.textContent ||
       row.querySelector('[data-testid="entity-row-subtitle"]')?.textContent ||
@@ -44,6 +45,13 @@
     if (!key.trim()) return;
 
     const match = cache.index[key];
+    console.debug("[rym-overlay][spotify] lookup", {
+      key,
+      title,
+      artist,
+      cacheSize: Object.keys(cache.index || {}).length,
+      found: Boolean(match),
+    });
     if (!match) return;
 
     const anchor =
@@ -84,6 +92,16 @@
     const trimmed = input.replace(/\s*-\s*topic$/i, "");
     const first = trimmed.split(/[,&·]|•/)[0] || trimmed;
     return first.trim();
+  }
+
+  function cleanTitle(input) {
+    if (!input) return "";
+    let t = input;
+    // Drop bracketed qualifiers and common remaster/remix markers.
+    t = t.replace(/\[[^\]]*\]/g, "");
+    t = t.replace(/\([^)]*\b(remaster(ed)?|remix|live|explicit)\b[^)]*\)/gi, "");
+    t = t.replace(/-\s*(remaster(ed)?\s*\d{2,4}|live|remix)/gi, "");
+    return t.trim();
   }
 
   function injectStyles() {
