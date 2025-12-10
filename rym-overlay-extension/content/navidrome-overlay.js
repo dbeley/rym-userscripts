@@ -4,6 +4,8 @@
   let cache = null;
   let styleInjected = false;
   let observer = null;
+  let scanScheduled = false;
+  let needsFullScan = false;
 
   init().catch((err) => console.warn("[rym-overlay] navidrome init failed", err));
 
@@ -20,20 +22,36 @@
   }
 
   function observe() {
-    scan();
-    observer = new MutationObserver(scan);
+    scheduleScan(true);
+    observer = new MutationObserver(() => {
+      needsFullScan = true;
+      scheduleScan();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  function scan() {
+  function scheduleScan(full = false) {
+    if (full) needsFullScan = true;
+    if (scanScheduled) return;
+    scanScheduled = true;
+    requestAnimationFrame(() => {
+      scanScheduled = false;
+      if (needsFullScan) {
+        needsFullScan = false;
+        runScan();
+      }
+    });
+  }
+
+  function runScan() {
     annotateTrackRows();
     annotateAlbumTiles();
   }
 
   function annotateTrackRows() {
-    const rows = document.querySelectorAll('tr[resource="song"]:not([data-rym-annotated])');
+    const rows = document.querySelectorAll('tr[resource="song"]');
     rows.forEach((row) => {
-      row.dataset.rymAnnotated = "1";
+      row.querySelectorAll(".rym-ext-badge").forEach((b) => b.remove());
       const titleCell = row.querySelector(".column-title");
       const artistCell = row.querySelector(".column-artist");
       if (!titleCell) return;
@@ -49,12 +67,9 @@
   }
 
   function annotateAlbumTiles() {
-    const tiles = document.querySelectorAll(
-      '.MuiGridListTile-root:not([data-rym-annotated]), .jss420:not([data-rym-annotated])'
-    );
-
+    const tiles = document.querySelectorAll('.MuiGridListTile-root, .jss420');
     tiles.forEach((tile) => {
-      tile.dataset.rymAnnotated = "1";
+      tile.querySelectorAll(".rym-ext-badge").forEach((b) => b.remove());
       const titleEl =
         tile.querySelector('.jss419 p, a[href*="#/album/"] p') ||
         tile.querySelector('.MuiTypography-root.MuiTypography-body1');
@@ -82,12 +97,18 @@
   }
 
   function buildBadge(match) {
-    const span = document.createElement("span");
-    span.className = "rym-ext-badge rym-ext-badge-navidrome";
+    const link = document.createElement(match.url ? "a" : "span");
+    link.className = "rym-ext-badge rym-ext-badge-navidrome";
     const rating = match.ratingValue || "?";
-    span.textContent = `RYM ${rating}`;
-    span.title = buildTooltip(match);
-    return span;
+    link.textContent = `RYM ${rating}`;
+    link.title = buildTooltip(match);
+    if (match.url) {
+      link.href = match.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.style.textDecoration = "none";
+    }
+    return link;
   }
 
   function buildTooltip(match) {

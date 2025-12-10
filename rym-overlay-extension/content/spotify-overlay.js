@@ -65,12 +65,18 @@
   }
 
   function buildBadge(match) {
-    const span = document.createElement("span");
-    span.className = "rym-ext-badge";
+    const link = document.createElement(match.url ? "a" : "span");
+    link.className = "rym-ext-badge";
     const rating = match.ratingValue || "?";
-    span.textContent = `RYM ${rating}`;
-    span.title = buildTooltip(match);
-    return span;
+    link.textContent = `RYM ${rating}`;
+    link.title = buildTooltip(match);
+    if (match.url) {
+      link.href = match.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.style.textDecoration = "none";
+    }
+    return link;
   }
 
   function buildTooltip(match) {

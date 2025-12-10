@@ -7,6 +7,7 @@
   );
 
   async function syncFromLocal() {
+    console.debug("[rym-overlay] rym-sync content script loaded");
     const raw = await waitForRecords();
     if (!raw) {
       console.info("[rym-overlay] no CSV tracker data found in localStorage.");

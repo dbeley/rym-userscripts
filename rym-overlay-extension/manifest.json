@@ -12,12 +12,19 @@
   "permissions": [
     "storage",
     "tabs",
+    "http://rateyourmusic.com/*",
     "https://rateyourmusic.com/*",
+    "https://www.rateyourmusic.com/*",
+    "http://www.rateyourmusic.com/*",
+    "https://rym.com/*",
+    "http://rym.com/*",
     "https://open.spotify.com/*",
     "https://www.youtube.com/*"
   ],
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "background.js"
+    ],
     "persistent": false
   },
   "browser_action": {
@@ -26,18 +33,38 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://rateyourmusic.com/*"],
-      "js": ["shared/normalize.js", "content/rym-sync.js"],
+      "matches": [
+        "https://rateyourmusic.com/*",
+        "http://rateyourmusic.com/*",
+        "https://www.rateyourmusic.com/*",
+        "http://www.rateyourmusic.com/*",
+        "https://rym.com/*",
+        "http://rym.com/*"
+      ],
+      "js": [
+        "shared/normalize.js",
+        "content/rym-sync.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://open.spotify.com/*"],
-      "js": ["shared/normalize.js", "content/spotify-overlay.js"],
+      "matches": [
+        "https://open.spotify.com/*"
+      ],
+      "js": [
+        "shared/normalize.js",
+        "content/spotify-overlay.js"
+      ],
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://www.youtube.com/*"],
-      "js": ["shared/normalize.js", "content/youtube-overlay.js"],
+      "matches": [
+        "https://www.youtube.com/*"
+      ],
+      "js": [
+        "shared/normalize.js",
+        "content/youtube-overlay.js"
+      ],
       "run_at": "document_idle"
     },
     {
@@ -48,8 +75,15 @@
         "http://*/navidrome/*",
         "https://*/navidrome/*"
       ],
-      "js": ["shared/normalize.js", "content/navidrome-overlay.js"],
+      "js": [
+        "shared/normalize.js",
+        "content/navidrome-overlay.js"
+      ],
       "run_at": "document_idle"
     }
+  ],
+  "web_accessible_resources": [
+    "content/rym-sync.js",
+    "shared/normalize.js"
   ]
 }
