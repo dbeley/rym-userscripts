@@ -1,0 +1,44 @@
+{
+  "manifest_version": 2,
+  "name": "RYM Cache Overlay",
+  "version": "0.1.0",
+  "description": "Display cached RateYourMusic ratings on Spotify, YouTube, and other sites using the CSV tracker data already stored in your browser.",
+  "applications": {
+    "gecko": {
+      "id": "rym-cache-overlay@example.com",
+      "strict_min_version": "91.0"
+    }
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "https://rateyourmusic.com/*",
+    "https://open.spotify.com/*",
+    "https://www.youtube.com/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_title": "RYM Overlay",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://rateyourmusic.com/*"],
+      "js": ["shared/normalize.js", "content/rym-sync.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://open.spotify.com/*"],
+      "js": ["shared/normalize.js", "content/spotify-overlay.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["shared/normalize.js", "content/youtube-overlay.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

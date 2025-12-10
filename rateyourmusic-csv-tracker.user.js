@@ -306,6 +306,12 @@
   async function saveRecords(records) {
     try {
       await GM_setValue(STORAGE_KEY, records);
+      // Mirror into localStorage so companion tools (e.g., a browser extension) can read the cache.
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+      } catch (storageErr) {
+        console.warn("[rateyourmusic-csv] Unable to mirror records to localStorage", storageErr);
+      }
     } catch (err) {
       console.error("[rateyourmusic-csv] Unable to persist records", err);
     }
