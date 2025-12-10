@@ -41,17 +41,8 @@
       "";
     const artist = cleanArtist(artistRaw);
 
-    const key = keyFor(artist, title);
+    const { match, key } = lookupMatch(artist, title, true);
     if (!key.trim()) return;
-
-    const match = cache.index[key];
-    console.debug("[rym-overlay][spotify] lookup", {
-      key,
-      title,
-      artist,
-      cacheSize: Object.keys(cache.index || {}).length,
-      found: Boolean(match),
-    });
     if (!match) return;
 
     const anchor =
@@ -77,6 +68,23 @@
       link.style.textDecoration = "none";
     }
     return link;
+  }
+
+  function lookupMatch(artist, title, preferTrack = false) {
+    const key = keyFor(artist, title);
+    if (!key.trim()) return { key, match: null };
+    const trackHit = preferTrack ? cache.trackIndex?.[key] : null;
+    const releaseHit = cache.index?.[key];
+    const match = trackHit || releaseHit || null;
+    console.debug("[rym-overlay][spotify] lookup", {
+      key,
+      title,
+      artist,
+      cacheSize: Object.keys(cache.index || {}).length,
+      trackHit: Boolean(trackHit),
+      found: Boolean(match),
+    });
+    return { key, match };
   }
 
   function buildTooltip(match) {

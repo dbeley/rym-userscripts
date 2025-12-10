@@ -19,7 +19,13 @@
     "https://rym.com/*",
     "http://rym.com/*",
     "https://open.spotify.com/*",
-    "https://www.youtube.com/*"
+    "https://www.youtube.com/*",
+    "https://*.bandcamp.com/*",
+    "https://bandcamp.com/*",
+    "https://www.deezer.com/*",
+    "https://deezer.com/*",
+    "https://www.last.fm/*",
+    "https://last.fm/*"
   ],
   "background": {
     "scripts": [
@@ -64,6 +70,39 @@
       "js": [
         "shared/normalize.js",
         "content/youtube-overlay.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.bandcamp.com/*",
+        "https://bandcamp.com/*"
+      ],
+      "js": [
+        "shared/normalize.js",
+        "content/bandcamp-overlay.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.deezer.com/*",
+        "https://deezer.com/*"
+      ],
+      "js": [
+        "shared/normalize.js",
+        "content/deezer-overlay.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.last.fm/*",
+        "https://last.fm/*"
+      ],
+      "js": [
+        "shared/normalize.js",
+        "content/lastfm-overlay.js"
       ],
       "run_at": "document_idle"
     },

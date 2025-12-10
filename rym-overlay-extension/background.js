@@ -33,10 +33,11 @@
   });
 
   async function handleCacheUpdate(records, source) {
-    const { entries, index } = indexRecords(records || {});
+    const { entries, index, trackIndex } = indexRecords(records || {});
     const next = {
       entries,
       index,
+      trackIndex,
       lastSync: Date.now(),
       source,
     };
@@ -52,15 +53,19 @@
 
   async function handleLookup(keys) {
     const current = await loadCache();
-    if (!current) return { matches: {}, lastSync: null };
+    if (!current) return { matches: {}, trackMatches: {}, lastSync: null };
 
     const matches = {};
+    const trackMatches = {};
     for (const key of keys) {
-      if (current.index[key]) {
+      if (current.index && current.index[key]) {
         matches[key] = current.index[key];
       }
+      if (current.trackIndex && current.trackIndex[key]) {
+        trackMatches[key] = current.trackIndex[key];
+      }
     }
-    return { matches, lastSync: current.lastSync || null };
+    return { matches, trackMatches, lastSync: current.lastSync || null };
   }
 
   async function loadCache() {
@@ -79,13 +84,14 @@
       ? input.filter(Boolean)
       : Object.values(input || {}).filter(Boolean);
     const index = {};
+    const trackIndex = {};
 
     for (const entry of entries) {
       const name = entry.name || "";
       const artist = entry.artist || "";
       const key = keyFor(artist, name);
       if (!key.trim()) continue;
-      index[key] = {
+      const normalized = {
         slug: entry.slug || "",
         name,
         artist,
@@ -96,9 +102,23 @@
         updatedAt: entry.updatedAt || "",
         url: entry.url || "",
       };
+      if (isTrackEntry(entry)) {
+        trackIndex[key] = normalized;
+        if (!index[key]) {
+          index[key] = normalized;
+        }
+      } else {
+        index[key] = normalized;
+      }
     }
 
-    return { entries, index };
+    return { entries, index, trackIndex };
+  }
+
+  function isTrackEntry(entry) {
+    const slug = entry.slug || "";
+    const url = entry.url || "";
+    return /\/track\//i.test(slug) || /\/track\//i.test(url) || /\/song\//i.test(slug) || /\/song\//i.test(url);
   }
 
   function normalize(text) {

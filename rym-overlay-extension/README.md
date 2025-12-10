@@ -1,14 +1,14 @@
 # RYM Cache Overlay (Firefox WebExtension)
 
-Display cached RateYourMusic ratings on Spotify, YouTube, and Navidrome using the data already captured by `rateyourmusic-csv-tracker.user.js`.
+Display cached RateYourMusic ratings on Spotify, YouTube, Bandcamp, Deezer, Last.fm, and Navidrome using the data already captured by `rateyourmusic-csv-tracker.user.js`.
 
 ## How it works
 - The CSV tracker userscript writes its records to `GM_setValue` and now mirrors the JSON blob into `localStorage` under the key `rateyourmusic-csv::records`.
 - This extension ships a content script for `rateyourmusic.com` that reads that localStorage entry when you visit an album or chart page and pushes it to the background script.
 - The background script builds a lookup index and keeps it in `browser.storage.local`.
-- Content scripts on Spotify, YouTube, and Navidrome pull the index and inject a small `RYM <rating>` badge next to matching titles.
+- Content scripts on Spotify, YouTube, Bandcamp, Deezer, Last.fm, and Navidrome pull the index and inject a small `RYM <rating>` badge next to matching titles.
 
-Visiting a RYM album or chart page automatically refreshes the cache; the next time you open Spotify/YouTube/Navidrome, the overlay uses the new data.
+Visiting a RYM album or chart page automatically refreshes the cache; the next time you open Spotify/YouTube/Bandcamp/Deezer/Last.fm/Navidrome, the overlay uses the new data.
 
 ## Loading the extension (Firefox)
 1. Open `about:debugging#/runtime/this-firefox`.

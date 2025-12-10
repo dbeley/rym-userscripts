@@ -74,18 +74,12 @@
     let match = null;
     let usedTitle = null;
     for (const title of titleCandidates) {
-      const key = keyFor(artist, title);
-      if (!key.trim()) continue;
-      match = cache.index[key] || null;
+      const { match: candidate, key } = lookupMatch(artist, title, true);
       usedTitle = title;
-      console.debug("[rym-overlay][youtube] lookup", {
-        key,
-        title,
-        artist,
-        cacheSize: Object.keys(cache.index || {}).length,
-        found: Boolean(match),
-      });
-      if (match) break;
+      if (candidate) {
+        match = candidate;
+        break;
+      }
     }
     if (!match) return;
 
@@ -188,6 +182,23 @@
       return { artist: cleanArtist(m[1]), title: cleanTitle(m[2], m[1]) };
     }
     return null;
+  }
+
+  function lookupMatch(artist, title, preferTrack = false) {
+    const key = keyFor(artist, title);
+    if (!key.trim()) return { key, match: null };
+    const trackHit = preferTrack ? cache.trackIndex?.[key] : null;
+    const releaseHit = cache.index?.[key];
+    const match = trackHit || releaseHit || null;
+    console.debug("[rym-overlay][youtube] lookup", {
+      key,
+      title,
+      artist,
+      cacheSize: Object.keys(cache.index || {}).length,
+      trackHit: Boolean(trackHit),
+      found: Boolean(match),
+    });
+    return { key, match };
   }
 
   function injectStyles() {

@@ -46,6 +46,7 @@
   function runScan() {
     annotateTrackRows();
     annotateAlbumTiles();
+    annotateArtistAlbumList();
   }
 
   function annotateTrackRows() {
@@ -62,33 +63,48 @@
         artistCell?.textContent ||
         "";
 
-      attachBadge(titleCell, artist, title);
+      attachBadge(titleCell, artist, title, true);
     });
   }
 
   function annotateAlbumTiles() {
-    const tiles = document.querySelectorAll('.MuiGridListTile-root, .jss420');
+    const tiles = document.querySelectorAll(
+      '.MuiGridListTile-root, .jss420, [data-testid="album-card"], a[href*="#/album/"]'
+    );
     tiles.forEach((tile) => {
       tile.querySelectorAll(".rym-ext-badge").forEach((b) => b.remove());
       const titleEl =
         tile.querySelector('.jss419 p, a[href*="#/album/"] p') ||
-        tile.querySelector('.MuiTypography-root.MuiTypography-body1');
+        tile.querySelector('.MuiTypography-root.MuiTypography-body1') ||
+        (tile.matches('a[href*="#/album/"]') ? tile : null);
       const artistEl =
         tile.querySelector('.jss417 a[href*="#/artist/"]') ||
         tile.querySelector('a[href*="#/artist/"]');
 
       const title = titleEl?.textContent || "";
-      const artist = artistEl?.textContent || "";
+      const artist = artistEl?.textContent || getPageArtist();
       if (!titleEl) return;
 
-      attachBadge(titleEl.parentElement || titleEl, artist, title);
+      attachBadge(titleEl.parentElement || titleEl, artist, title, false);
     });
   }
 
-  function attachBadge(target, artist, title) {
+  function annotateArtistAlbumList() {
+    const listItems = document.querySelectorAll(
+      '.artist-albums a[href*="#/album/"]:not([data-rym-annotated]), [data-testid="artist-album"] a[href*="#/album/"]:not([data-rym-annotated])'
+    );
+    listItems.forEach((item) => {
+      item.dataset.rymAnnotated = "1";
+      const title = item.textContent || item.getAttribute("title") || "";
+      const artist = getPageArtist();
+      attachBadge(item, artist, title, false);
+    });
+  }
+
+  function attachBadge(target, artist, title, preferTrack) {
     const key = keyFor(artist, title);
     if (!key.trim()) return;
-    const match = cache.index[key];
+    const match = lookupMatch(key, preferTrack, /*strictTrack*/ preferTrack);
     if (!match) return;
     if (target.querySelector(".rym-ext-badge")) return;
 
@@ -113,6 +129,8 @@
         "click",
         (ev) => {
           ev.stopPropagation();
+          ev.preventDefault();
+          window.open(match.url, "_blank", "noopener,noreferrer");
         },
         true
       );
@@ -131,6 +149,28 @@
     if (match.updatedAt) bits.push(`Cached: ${match.updatedAt}`);
     if (match.url) bits.push(`Source: ${match.url}`);
     return bits.join(" · ");
+  }
+
+  function lookupMatch(key, preferTrack, strictTrack) {
+    const trackHit = preferTrack ? cache.trackIndex?.[key] : null;
+    const releaseHit = cache.index?.[key];
+    const match = trackHit || (strictTrack ? null : releaseHit) || null;
+    console.debug("[rym-overlay][navidrome] lookup", {
+      key,
+      trackHit: Boolean(trackHit),
+      found: Boolean(match),
+    });
+    return match;
+  }
+
+  function getPageArtist() {
+    return (
+      document.querySelector('header a[href*="#/artist/"]')?.textContent ||
+      document.querySelector('main a[href*="#/artist/"]')?.textContent ||
+      document.querySelector(".MuiTypography-h4")?.textContent ||
+      document.querySelector(".MuiTypography-h5")?.textContent ||
+      ""
+    ).trim();
   }
 
   function injectStyles() {
