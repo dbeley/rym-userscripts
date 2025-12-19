@@ -31,14 +31,14 @@
 
   async function main() {
     // Check if we're on a chart page
-    if (window.location.pathname.includes('/charts/')) {
+    if (window.location.pathname.includes("/charts/")) {
       const records = extractChartRecords();
       if (records.length > 0) {
         for (const record of records) {
           await upsertRecord(record);
         }
         console.info(
-          `[rateyourmusic-csv] Recorded ${records.length} releases from chart page`
+          `[rateyourmusic-csv] Recorded ${records.length} releases from chart page`,
         );
         await writeCsvToDisk();
       }
@@ -51,14 +51,14 @@
 
     await upsertRecord(record);
     console.info(
-      `[rateyourmusic-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`
+      `[rateyourmusic-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`,
     );
     await writeCsvToDisk();
   }
 
   function extractReleaseRecord() {
     const release = document.querySelector(
-      '.release_page[itemtype="http://schema.org/MusicAlbum"]'
+      '.release_page[itemtype="http://schema.org/MusicAlbum"]',
     );
     if (!release) {
       console.warn("[rateyourmusic-csv] Release blob not found on page.");
@@ -67,10 +67,18 @@
 
     const metadata = collectAlbumInfo();
     const agg = release.querySelector('[itemprop="aggregateRating"]');
-    const ratingValue = agg?.querySelector('meta[itemprop="ratingValue"]')?.content;
-    const ratingCount = agg?.querySelector('meta[itemprop="ratingCount"]')?.content;
-    const reviewCount = agg?.querySelector('meta[itemprop="reviewCount"]')?.content;
-    const maxRating = agg?.querySelector('meta[itemprop="bestRating"]')?.content;
+    const ratingValue = agg?.querySelector(
+      'meta[itemprop="ratingValue"]',
+    )?.content;
+    const ratingCount = agg?.querySelector(
+      'meta[itemprop="ratingCount"]',
+    )?.content;
+    const reviewCount = agg?.querySelector(
+      'meta[itemprop="reviewCount"]',
+    )?.content;
+    const maxRating = agg?.querySelector(
+      'meta[itemprop="bestRating"]',
+    )?.content;
 
     const name =
       release.querySelector('meta[itemprop="name"]')?.content?.trim() ||
@@ -83,10 +91,10 @@
     const languages = metadata["Languages"] || "";
 
     const primaryGenres = extractList(
-      document.querySelectorAll(".release_pri_genres a.genre")
+      document.querySelectorAll(".release_pri_genres a.genre"),
     );
     const secondaryGenres = extractList(
-      document.querySelectorAll(".release_sec_genres a.genre")
+      document.querySelectorAll(".release_sec_genres a.genre"),
     );
     const descriptors = extractDescriptors();
 
@@ -100,8 +108,7 @@
       "";
 
     const url =
-      release.querySelector('meta[itemprop="url"]')?.content ||
-      location.href;
+      release.querySelector('meta[itemprop="url"]')?.content || location.href;
     const urlObj = new URL(url, location.href);
     const fullUrl = urlObj.href;
     const slug = urlObj.pathname.split("/").filter(Boolean).pop() || "other";
@@ -130,61 +137,95 @@
   }
 
   function extractChartRecords() {
-    const chartItems = document.querySelectorAll('.page_charts_section_charts_item.object_release');
+    const chartItems = document.querySelectorAll(
+      ".page_charts_section_charts_item.object_release",
+    );
     const records = [];
 
     chartItems.forEach((item) => {
-      const link = item.querySelector('.page_charts_section_charts_item_link.release');
+      const link = item.querySelector(
+        ".page_charts_section_charts_item_link.release",
+      );
       if (!link) return;
 
       const url = new URL(link.href, location.href).href;
-      const slug = new URL(url).pathname.split('/').filter(Boolean).pop();
+      const slug = new URL(url).pathname.split("/").filter(Boolean).pop();
       if (!slug) return;
 
       // Extract name
-      const nameNode = link.querySelector('.ui_name_locale_original');
-      const name = nameNode ? nameNode.textContent.trim() : link.textContent.trim();
+      const nameNode = link.querySelector(".ui_name_locale_original");
+      const name = nameNode
+        ? nameNode.textContent.trim()
+        : link.textContent.trim();
 
       // Extract artist
-      const artistLink = item.querySelector('.page_charts_section_charts_item_credited_links_primary a.artist');
-      const artistNameNode = artistLink?.querySelector('.ui_name_locale_original');
-      const artist = artistNameNode ? artistNameNode.textContent.trim() : (artistLink?.textContent.trim() || "");
+      const artistLink = item.querySelector(
+        ".page_charts_section_charts_item_credited_links_primary a.artist",
+      );
+      const artistNameNode = artistLink?.querySelector(
+        ".ui_name_locale_original",
+      );
+      const artist = artistNameNode
+        ? artistNameNode.textContent.trim()
+        : artistLink?.textContent.trim() || "";
 
       // Extract release date
-      const dateNode = item.querySelector('.page_charts_section_charts_item_date span');
+      const dateNode = item.querySelector(
+        ".page_charts_section_charts_item_date span",
+      );
       const releaseDate = dateNode ? dateNode.textContent.trim() : "";
 
       // Extract type
-      const typeNode = item.querySelector('.page_charts_section_charts_item_release_type');
+      const typeNode = item.querySelector(
+        ".page_charts_section_charts_item_release_type",
+      );
       const type = typeNode ? typeNode.textContent.trim() : "";
 
       // Extract rating info
-      const ratingNode = item.querySelector('.page_charts_section_charts_item_details_average_num');
+      const ratingNode = item.querySelector(
+        ".page_charts_section_charts_item_details_average_num",
+      );
       const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
 
-      const ratingCountNode = item.querySelector('.page_charts_section_charts_item_details_ratings .abbr');
-      const ratingCount = ratingCountNode ? ratingCountNode.textContent.trim() : "";
+      const ratingCountNode = item.querySelector(
+        ".page_charts_section_charts_item_details_ratings .abbr",
+      );
+      const ratingCount = ratingCountNode
+        ? ratingCountNode.textContent.trim()
+        : "";
 
-      const reviewCountNode = item.querySelector('.page_charts_section_charts_item_details_reviews .abbr');
-      const reviewCount = reviewCountNode ? reviewCountNode.textContent.trim() : "";
+      const reviewCountNode = item.querySelector(
+        ".page_charts_section_charts_item_details_reviews .abbr",
+      );
+      const reviewCount = reviewCountNode
+        ? reviewCountNode.textContent.trim()
+        : "";
 
       // Extract genres
       const primaryGenres = extractList(
-        item.querySelectorAll('.page_charts_section_charts_item_genres_primary a.genre')
+        item.querySelectorAll(
+          ".page_charts_section_charts_item_genres_primary a.genre",
+        ),
       );
       const secondaryGenres = extractList(
-        item.querySelectorAll('.page_charts_section_charts_item_genres_secondary a.genre')
+        item.querySelectorAll(
+          ".page_charts_section_charts_item_genres_secondary a.genre",
+        ),
       );
 
       // Extract descriptors
-      const descriptorNodes = item.querySelectorAll('.page_charts_section_charts_item_genre_descriptors .comma_separated');
+      const descriptorNodes = item.querySelectorAll(
+        ".page_charts_section_charts_item_genre_descriptors .comma_separated",
+      );
       const descriptors = Array.from(descriptorNodes)
-        .map(node => node.textContent.trim())
+        .map((node) => node.textContent.trim())
         .filter(Boolean)
-        .join('; ');
+        .join("; ");
 
       // Extract image
-      const imgNode = item.querySelector('.page_charts_section_charts_item_image img');
+      const imgNode = item.querySelector(
+        ".page_charts_section_charts_item_image img",
+      );
       const image = imgNode ? imgNode.src : "";
 
       const now = new Date().toISOString();
@@ -252,7 +293,7 @@
   async function upsertRecord(record) {
     const records = await loadRecords();
     const existing = records[record.slug] || {};
-    
+
     // If the new record is partial, only update fields that have values
     // and preserve full data if it exists
     if (record.isPartial && !existing.isPartial) {
@@ -269,7 +310,9 @@
         ...(record.ratingCount && { ratingCount: record.ratingCount }),
         ...(record.reviewCount && { reviewCount: record.reviewCount }),
         ...(record.primaryGenres && { primaryGenres: record.primaryGenres }),
-        ...(record.secondaryGenres && { secondaryGenres: record.secondaryGenres }),
+        ...(record.secondaryGenres && {
+          secondaryGenres: record.secondaryGenres,
+        }),
         ...(record.descriptors && { descriptors: record.descriptors }),
         ...(record.image && { image: record.image }),
         // Update URL only if it's different
@@ -290,7 +333,7 @@
       }
       records[record.slug] = merged;
     }
-    
+
     await saveRecords(records);
   }
 
@@ -337,7 +380,7 @@
     const rows = Object.values(records)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) =>
-        headers.map((key) => escapeCsv(entry[key] ?? "")).join(",")
+        headers.map((key) => escapeCsv(entry[key] ?? "")).join(","),
       );
 
     return [headers.join(","), ...rows].join("\n");
@@ -358,7 +401,7 @@
 
     if (!handle) {
       console.info(
-        "[rateyourmusic-csv] Pick an output file via the menu to auto-save the CSV."
+        "[rateyourmusic-csv] Pick an output file via the menu to auto-save the CSV.",
       );
       return;
     }
@@ -366,7 +409,7 @@
     const permission = await ensurePermission(handle);
     if (permission !== "granted") {
       console.warn(
-        "[rateyourmusic-csv] File permission was denied. Re-select the output file."
+        "[rateyourmusic-csv] File permission was denied. Re-select the output file.",
       );
       return;
     }
@@ -397,7 +440,7 @@
   async function pickCsvFile(writeCurrentCsv = false) {
     if (!window.showSaveFilePicker) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead."
+        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead.",
       );
       return;
     }
@@ -422,9 +465,9 @@
     const records = await loadRecords();
     const csv = buildCsv(records);
     console.info(
-      `[rateyourmusic-csv] Download command triggered (records=${Object.keys(
-        records
-      ).length || 0})`
+      `[rateyourmusic-csv] Download command triggered (records=${
+        Object.keys(records).length || 0
+      })`,
     );
     const filename = "rateyourmusic-releases.csv";
     const blob = new Blob([csv], { type: "text/csv" });
@@ -435,7 +478,8 @@
     const attempts = [
       async () => {
         if (isFirefox) throw new Error("skip GM_download on Firefox");
-        if (typeof GM_download !== "function") throw new Error("GM_download missing");
+        if (typeof GM_download !== "function")
+          throw new Error("GM_download missing");
         await GM_download({ url: blobUrl, name: filename, saveAs: true });
         console.info("[rateyourmusic-csv] GM_download succeeded.");
       },
@@ -446,7 +490,11 @@
         anchor.style.display = "none";
         document.body.append(anchor);
         anchor.dispatchEvent(
-          new MouseEvent("click", { view: window, bubbles: true, cancelable: true })
+          new MouseEvent("click", {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+          }),
         );
         anchor.click();
         anchor.remove();
@@ -473,7 +521,7 @@
 
     if (!success) {
       alert(
-        "CSV download was blocked. Check popup/download permissions for this site and try again."
+        "CSV download was blocked. Check popup/download permissions for this site and try again.",
       );
     }
 

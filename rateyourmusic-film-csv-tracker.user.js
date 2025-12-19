@@ -31,14 +31,14 @@
 
   async function main() {
     // Check if we're on a chart page
-    if (window.location.pathname.includes('/charts/')) {
+    if (window.location.pathname.includes("/charts/")) {
       const records = extractChartRecords();
       if (records.length > 0) {
         for (const record of records) {
           await upsertRecord(record);
         }
         console.info(
-          `[rateyourmusic-film-csv] Recorded ${records.length} films from chart page`
+          `[rateyourmusic-film-csv] Recorded ${records.length} films from chart page`,
         );
         await writeCsvToDisk();
       }
@@ -51,14 +51,14 @@
 
     await upsertRecord(record);
     console.info(
-      `[rateyourmusic-film-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`
+      `[rateyourmusic-film-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`,
     );
     await writeCsvToDisk();
   }
 
   function extractFilmRecord() {
     const film = document.querySelector(
-      '.release_page[itemtype="http://schema.org/Movie"]'
+      '.release_page[itemtype="http://schema.org/Movie"]',
     );
     if (!film) {
       console.warn("[rateyourmusic-film-csv] Film blob not found on page.");
@@ -67,10 +67,18 @@
 
     const metadata = collectFilmInfo();
     const agg = film.querySelector('[itemprop="aggregateRating"]');
-    const ratingValue = agg?.querySelector('meta[itemprop="ratingValue"]')?.content;
-    const ratingCount = agg?.querySelector('meta[itemprop="ratingCount"]')?.content;
-    const reviewCount = agg?.querySelector('meta[itemprop="reviewCount"]')?.content;
-    const maxRating = agg?.querySelector('meta[itemprop="bestRating"]')?.content;
+    const ratingValue = agg?.querySelector(
+      'meta[itemprop="ratingValue"]',
+    )?.content;
+    const ratingCount = agg?.querySelector(
+      'meta[itemprop="ratingCount"]',
+    )?.content;
+    const reviewCount = agg?.querySelector(
+      'meta[itemprop="reviewCount"]',
+    )?.content;
+    const maxRating = agg?.querySelector(
+      'meta[itemprop="bestRating"]',
+    )?.content;
 
     const titleNode = document.querySelector(".film_title h1");
     const name =
@@ -79,7 +87,8 @@
       document.title;
     const altTitle =
       titleNode?.querySelector(".sub_text")?.textContent?.trim() || "";
-    const releaseDate = metadata["Release date"] || metadata["Release Date"] || "";
+    const releaseDate =
+      metadata["Release date"] || metadata["Release Date"] || "";
     const runtime = metadata["Runtime"] || "";
     const rank = metadata["Ranked"] || "";
     const languages = metadata["Language"] || metadata["Languages"] || "";
@@ -95,10 +104,10 @@
       .filter(Boolean)
       .join("; ");
     const primaryGenres = extractList(
-      document.querySelectorAll(".film_pri_genres a.film_genre")
+      document.querySelectorAll(".film_pri_genres a.film_genre"),
     );
     const secondaryGenres = extractList(
-      document.querySelectorAll(".film_sec_genres a.film_genre")
+      document.querySelectorAll(".film_sec_genres a.film_genre"),
     );
     const descriptors = metadata["Descriptors"] || "";
     const studios = metadata["Studios"] || "";
@@ -113,7 +122,8 @@
       film.querySelector("meta[itemprop=image]")?.content ||
       "";
 
-    const urlFromMeta = film.querySelector('meta[itemprop="url"]')?.content || location.href;
+    const urlFromMeta =
+      film.querySelector('meta[itemprop="url"]')?.content || location.href;
     const urlObj = new URL(urlFromMeta, location.href);
     const url = urlObj.href;
     const slug = urlObj.pathname.split("/").filter(Boolean).pop() || "other";
@@ -146,26 +156,42 @@
   }
 
   function extractChartRecords() {
-    const chartItems = document.querySelectorAll('.page_charts_section_charts_item.object_film');
+    const chartItems = document.querySelectorAll(
+      ".page_charts_section_charts_item.object_film",
+    );
     const records = [];
 
     chartItems.forEach((item) => {
-      const link = item.querySelector('.page_charts_section_charts_item_link.film');
+      const link = item.querySelector(
+        ".page_charts_section_charts_item_link.film",
+      );
       if (!link) return;
 
       const url = new URL(link.href, location.href).href;
-      const slug = new URL(url).pathname.split('/').filter(Boolean).pop();
+      const slug = new URL(url).pathname.split("/").filter(Boolean).pop();
       if (!slug) return;
 
       // Extract name (and alt title if present)
-      const nameLocaleNode = link.querySelector('.ui_name_locale');
+      const nameLocaleNode = link.querySelector(".ui_name_locale");
       let name = "";
       let altTitle = "";
       if (nameLocaleNode) {
-        const langNode = nameLocaleNode.querySelector('.ui_name_locale_language');
-        const origNode = nameLocaleNode.querySelector('.ui_name_locale_original');
-        name = langNode ? langNode.textContent.trim() : (origNode ? origNode.textContent.trim() : link.textContent.trim());
-        if (langNode && origNode && langNode.textContent !== origNode.textContent) {
+        const langNode = nameLocaleNode.querySelector(
+          ".ui_name_locale_language",
+        );
+        const origNode = nameLocaleNode.querySelector(
+          ".ui_name_locale_original",
+        );
+        name = langNode
+          ? langNode.textContent.trim()
+          : origNode
+            ? origNode.textContent.trim()
+            : link.textContent.trim();
+        if (
+          langNode &&
+          origNode &&
+          langNode.textContent !== origNode.textContent
+        ) {
           altTitle = origNode.textContent.trim();
         }
       } else {
@@ -173,29 +199,47 @@
       }
 
       // Extract release date
-      const dateNode = item.querySelector('.page_charts_section_charts_item_date span');
+      const dateNode = item.querySelector(
+        ".page_charts_section_charts_item_date span",
+      );
       const releaseDate = dateNode ? dateNode.textContent.trim() : "";
 
       // Extract rating info
-      const ratingNode = item.querySelector('.page_charts_section_charts_item_details_average_num');
+      const ratingNode = item.querySelector(
+        ".page_charts_section_charts_item_details_average_num",
+      );
       const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
 
-      const ratingCountNode = item.querySelector('.page_charts_section_charts_item_details_ratings .abbr');
-      const ratingCount = ratingCountNode ? ratingCountNode.textContent.trim() : "";
+      const ratingCountNode = item.querySelector(
+        ".page_charts_section_charts_item_details_ratings .abbr",
+      );
+      const ratingCount = ratingCountNode
+        ? ratingCountNode.textContent.trim()
+        : "";
 
-      const reviewCountNode = item.querySelector('.page_charts_section_charts_item_details_reviews .abbr');
-      const reviewCount = reviewCountNode ? reviewCountNode.textContent.trim() : "";
+      const reviewCountNode = item.querySelector(
+        ".page_charts_section_charts_item_details_reviews .abbr",
+      );
+      const reviewCount = reviewCountNode
+        ? reviewCountNode.textContent.trim()
+        : "";
 
       // Extract genres
       const primaryGenres = extractList(
-        item.querySelectorAll('.page_charts_section_charts_item_genres_primary a.genre')
+        item.querySelectorAll(
+          ".page_charts_section_charts_item_genres_primary a.genre",
+        ),
       );
       const secondaryGenres = extractList(
-        item.querySelectorAll('.page_charts_section_charts_item_genres_secondary a.genre')
+        item.querySelectorAll(
+          ".page_charts_section_charts_item_genres_secondary a.genre",
+        ),
       );
 
       // Extract image
-      const imgNode = item.querySelector('.page_charts_section_charts_item_image img');
+      const imgNode = item.querySelector(
+        ".page_charts_section_charts_item_image img",
+      );
       const image = imgNode ? imgNode.src : "";
 
       const now = new Date().toISOString();
@@ -257,7 +301,7 @@
   async function upsertRecord(record) {
     const records = await loadRecords();
     const existing = records[record.slug] || {};
-    
+
     // If the new record is partial, only update fields that have values
     // and preserve full data if it exists
     if (record.isPartial && !existing.isPartial) {
@@ -273,7 +317,9 @@
         ...(record.ratingCount && { ratingCount: record.ratingCount }),
         ...(record.reviewCount && { reviewCount: record.reviewCount }),
         ...(record.primaryGenres && { primaryGenres: record.primaryGenres }),
-        ...(record.secondaryGenres && { secondaryGenres: record.secondaryGenres }),
+        ...(record.secondaryGenres && {
+          secondaryGenres: record.secondaryGenres,
+        }),
         ...(record.image && { image: record.image }),
         // Update URL only if it's different
         ...(record.url && record.url !== existing.url && { url: record.url }),
@@ -293,7 +339,7 @@
       }
       records[record.slug] = merged;
     }
-    
+
     await saveRecords(records);
   }
 
@@ -344,7 +390,7 @@
     const rows = Object.values(records)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) =>
-        headers.map((key) => escapeCsv(entry[key] ?? "")).join(",")
+        headers.map((key) => escapeCsv(entry[key] ?? "")).join(","),
       );
 
     return [headers.join(","), ...rows].join("\n");
@@ -365,7 +411,7 @@
 
     if (!handle) {
       console.info(
-        "[rateyourmusic-film-csv] Pick an output file via the menu to auto-save the CSV."
+        "[rateyourmusic-film-csv] Pick an output file via the menu to auto-save the CSV.",
       );
       return;
     }
@@ -373,7 +419,7 @@
     const permission = await ensurePermission(handle);
     if (permission !== "granted") {
       console.warn(
-        "[rateyourmusic-film-csv] File permission was denied. Re-select the output file."
+        "[rateyourmusic-film-csv] File permission was denied. Re-select the output file.",
       );
       return;
     }
@@ -404,7 +450,7 @@
   async function pickCsvFile(writeCurrentCsv = false) {
     if (!window.showSaveFilePicker) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead."
+        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead.",
       );
       return;
     }
@@ -429,9 +475,9 @@
     const records = await loadRecords();
     const csv = buildCsv(records);
     console.info(
-      `[rateyourmusic-film-csv] Download command triggered (records=${Object.keys(
-        records
-      ).length || 0})`
+      `[rateyourmusic-film-csv] Download command triggered (records=${
+        Object.keys(records).length || 0
+      })`,
     );
     const filename = "rateyourmusic-films.csv";
     const blob = new Blob([csv], { type: "text/csv" });
@@ -442,7 +488,8 @@
     const attempts = [
       async () => {
         if (isFirefox) throw new Error("skip GM_download on Firefox");
-        if (typeof GM_download !== "function") throw new Error("GM_download missing");
+        if (typeof GM_download !== "function")
+          throw new Error("GM_download missing");
         await GM_download({ url: blobUrl, name: filename, saveAs: true });
         console.info("[rateyourmusic-film-csv] GM_download succeeded.");
       },
@@ -453,11 +500,17 @@
         anchor.style.display = "none";
         document.body.append(anchor);
         anchor.dispatchEvent(
-          new MouseEvent("click", { view: window, bubbles: true, cancelable: true })
+          new MouseEvent("click", {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+          }),
         );
         anchor.click();
         anchor.remove();
-        console.info("[rateyourmusic-film-csv] Anchor click fallback attempted.");
+        console.info(
+          "[rateyourmusic-film-csv] Anchor click fallback attempted.",
+        );
       },
       async () => {
         const dataUrl = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
@@ -480,7 +533,7 @@
 
     if (!success) {
       alert(
-        "CSV download was blocked. Check popup/download permissions for this site and try again."
+        "CSV download was blocked. Check popup/download permissions for this site and try again.",
       );
     }
 
@@ -492,7 +545,10 @@
       const db = await openDb();
       return await readHandle(db);
     } catch (err) {
-      console.error("[rateyourmusic-film-csv] Unable to load stored handle", err);
+      console.error(
+        "[rateyourmusic-film-csv] Unable to load stored handle",
+        err,
+      );
       return null;
     }
   }

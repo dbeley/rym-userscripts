@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name         RateYourMusic Album Charts Data Extractor
+// @name         RateYourMusic Film Charts Data Extractor
 // @namespace    RateYourMusic scripts
-// @version      1.5
-// @description  Extract and download album chart data as CSV or plain text from RateYourMusic charts pages.
+// @version      1.0
+// @description  Extract and download film chart data as CSV or plain text from RateYourMusic charts pages.
 // @author       dbeley
-// @match        https://rateyourmusic.com/charts/
-// @match        https://rateyourmusic.com/charts/top/album/*
-// @match        https://rateyourmusic.com/charts/popular/album/*
-// @match        https://rateyourmusic.com/charts/esoteric/album/*
-// @match        https://rateyourmusic.com/charts/diverse/album/*
+// @match        https://rateyourmusic.com/charts/top/film/*
+// @match        https://rateyourmusic.com/charts/popular/film/*
+// @match        https://rateyourmusic.com/charts/esoteric/film/*
+// @match        https://rateyourmusic.com/charts/diverse/film/*
+// @match        https://rateyourmusic.com/charts/bottom/film/*
 // @grant        none
 // ==/UserScript==
 
@@ -30,9 +30,9 @@
     const path = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
 
-    // Extract chart type (top, popular, esoteric, diverse)
+    // Extract chart type (top, popular, esoteric, diverse, bottom)
     const chartTypeMatch = path.match(
-      /\/charts\/(top|popular|esoteric|diverse)\//,
+      /\/charts\/(top|popular|esoteric|diverse|bottom)\//,
     );
     const chartType = chartTypeMatch ? chartTypeMatch[1] : "unknown";
 
@@ -55,7 +55,8 @@
             "popular",
             "esoteric",
             "diverse",
-            "album",
+            "bottom",
+            "film",
           ].includes(p) &&
           !/^\d{4}$/.test(p),
       );
@@ -71,29 +72,31 @@
     };
   }
 
-  // Function to extract relevant information from each album div
+  // Function to extract relevant information from each film div
   function extractInfo(div) {
     const info = {};
 
-    // Extract album title
+    // Extract film title
     const titleElement = div.querySelector(
       ".page_charts_section_charts_item_title .ui_name_locale_original, .page_charts_section_charts_item_title .ui_name_locale",
     );
     info.title = titleElement ? titleElement.textContent.trim() : "N/A";
 
-    // Extract artist name
-    const artistElement = div.querySelector(
+    // Extract director(s)
+    const directorElement = div.querySelector(
       ".page_charts_section_charts_item_credited_text .ui_name_locale_original, .page_charts_section_charts_item_credited_text .ui_name_locale",
     );
-    info.artist = artistElement ? artistElement.textContent.trim() : "N/A";
+    info.director = directorElement
+      ? directorElement.textContent.trim()
+      : "N/A";
 
     // Extract release date
     const dateElement = div.querySelector(
-      ".page_charts_section_charts_item_title_date_compact span:first-child",
+      ".page_charts_section_charts_item_title_date_compact span:first-child, .page_charts_section_charts_item_date",
     );
     info.release_date = dateElement ? dateElement.textContent.trim() : "N/A";
 
-    // Extract genres (primary and secondary)
+    // Extract genres
     const genreElements = div.querySelectorAll(
       ".page_charts_section_charts_item_genres_primary a, .page_charts_section_charts_item_genres_secondary a",
     );
@@ -165,7 +168,7 @@
       return null;
     }
 
-    return data.map((item) => `${item.artist} - ${item.title}`).join("\n");
+    return data.map((item) => `${item.director} - ${item.title}`).join("\n");
   }
 
   // Function to download a file
@@ -195,7 +198,7 @@
 
     // Select all div elements with the relevant class
     const divElements = document.querySelectorAll(
-      "div.page_charts_section_charts_item.object_release",
+      "div.page_charts_section_charts_item.object_film",
     );
 
     // Initialize an array to store the extracted information
@@ -224,7 +227,7 @@
       : chartInfo.type;
 
     // Generate filename with timestamp
-    const filename = `rym_album_charts_${chartPart}_${timestamp}.csv`;
+    const filename = `rym_film_charts_${chartPart}_${timestamp}.csv`;
 
     // Download the CSV file
     downloadFile(csvData, filename, "text/csv");
@@ -238,7 +241,7 @@
 
     // Select all div elements with the relevant class
     const divElements = document.querySelectorAll(
-      "div.page_charts_section_charts_item.object_release",
+      "div.page_charts_section_charts_item.object_film",
     );
 
     // Initialize an array to store the extracted information
@@ -267,7 +270,7 @@
       : chartInfo.type;
 
     // Generate filename with timestamp
-    const filename = `rym_album_charts_${chartPart}_${timestamp}.txt`;
+    const filename = `rym_film_charts_${chartPart}_${timestamp}.txt`;
 
     // Download the text file
     downloadFile(plainTextData, filename, "text/plain");

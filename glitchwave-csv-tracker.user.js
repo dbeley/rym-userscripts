@@ -31,14 +31,14 @@
 
   async function main() {
     // Check if we're on a chart page
-    if (window.location.pathname.includes('/charts/')) {
+    if (window.location.pathname.includes("/charts/")) {
       const records = extractChartRecords();
       if (records.length > 0) {
         for (const record of records) {
           await upsertRecord(record);
         }
         console.info(
-          `[glitchwave-csv] Recorded ${records.length} games from chart page`
+          `[glitchwave-csv] Recorded ${records.length} games from chart page`,
         );
         await writeCsvToDisk();
       }
@@ -51,14 +51,14 @@
 
     await upsertRecord(record);
     console.info(
-      `[glitchwave-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`
+      `[glitchwave-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`,
     );
     await writeCsvToDisk();
   }
 
   function extractGameRecord() {
     const scriptNodes = Array.from(
-      document.querySelectorAll('script[type="application/ld+json"]')
+      document.querySelectorAll('script[type="application/ld+json"]'),
     );
 
     for (const node of scriptNodes) {
@@ -105,15 +105,15 @@
 
   function extractChartRecords() {
     // Look for chart cards in the Glitchwave format
-    const chartCards = document.querySelectorAll('.chart_card_top');
+    const chartCards = document.querySelectorAll(".chart_card_top");
     const records = [];
 
     chartCards.forEach((card) => {
-      const link = card.querySelector('.chart_title a.game');
+      const link = card.querySelector(".chart_title a.game");
       if (!link) return;
 
       const url = new URL(link.href, location.href).href;
-      const slug = new URL(url).pathname.split('/').filter(Boolean).pop();
+      const slug = new URL(url).pathname.split("/").filter(Boolean).pop();
       if (!slug) return;
 
       const name = link.textContent.trim();
@@ -123,33 +123,36 @@
       if (!container) return;
 
       // Extract release date
-      const dateNode = card.querySelector('.chart_release_date');
+      const dateNode = card.querySelector(".chart_release_date");
       const releaseDate = dateNode ? dateNode.textContent.trim() : "";
 
       // Extract rating info
-      const ratingNode = container.querySelector('.chart_card_score .rating_number');
+      const ratingNode = container.querySelector(
+        ".chart_card_score .rating_number",
+      );
       const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
 
-      const ratingsText = container.querySelector('.chart_card_ratings b');
+      const ratingsText = container.querySelector(".chart_card_ratings b");
       const ratingCount = ratingsText ? ratingsText.textContent.trim() : "";
 
-      const reviewsText = container.querySelector('.chart_card_reviews b');
+      const reviewsText = container.querySelector(".chart_card_reviews b");
       const reviewCount = reviewsText ? reviewsText.textContent.trim() : "";
 
       // Extract genres
-      const genreNodes = card.querySelectorAll('.chart_genres a.genre_');
+      const genreNodes = card.querySelectorAll(".chart_genres a.genre_");
       const genres = Array.from(genreNodes)
-        .map(node => node.textContent.trim())
+        .map((node) => node.textContent.trim())
         .filter(Boolean)
-        .join('; ');
+        .join("; ");
 
       // Extract image
-      const imageDiv = container.querySelector('.chart_card_image');
+      const imageDiv = container.querySelector(".chart_card_image");
       let image = "";
       if (imageDiv) {
-        const bgUrl = imageDiv.style.backgroundImage ||
-                      imageDiv.getAttribute('data-delayloadurl2x') ||
-                      imageDiv.getAttribute('data-delayloadurl');
+        const bgUrl =
+          imageDiv.style.backgroundImage ||
+          imageDiv.getAttribute("data-delayloadurl2x") ||
+          imageDiv.getAttribute("data-delayloadurl");
         if (bgUrl) {
           // Extract URL from url('...') or just use the value
           const match = bgUrl.match(/url\(['"]?([^'"]+)['"]?\)/);
@@ -183,7 +186,7 @@
   async function upsertRecord(record) {
     const records = await loadRecords();
     const existing = records[record.slug] || {};
-    
+
     // If the new record is partial, only update fields that have values
     // and preserve full data if it exists
     if (record.isPartial && !existing.isPartial) {
@@ -217,7 +220,7 @@
       }
       records[record.slug] = merged;
     }
-    
+
     await saveRecords(records);
   }
 
@@ -265,7 +268,7 @@
     const rows = Object.values(records)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) =>
-        headers.map((key) => escapeCsv(entry[key] ?? "")).join(",")
+        headers.map((key) => escapeCsv(entry[key] ?? "")).join(","),
       );
 
     return [headers.join(","), ...rows].join("\n");
@@ -286,7 +289,7 @@
 
     if (!handle) {
       console.info(
-        "[glitchwave-csv] Pick an output file via the menu to auto-save the CSV."
+        "[glitchwave-csv] Pick an output file via the menu to auto-save the CSV.",
       );
       return;
     }
@@ -294,7 +297,7 @@
     const permission = await ensurePermission(handle);
     if (permission !== "granted") {
       console.warn(
-        "[glitchwave-csv] File permission was denied. Re-select the output file."
+        "[glitchwave-csv] File permission was denied. Re-select the output file.",
       );
       return;
     }
@@ -325,7 +328,7 @@
   async function pickCsvFile(writeCurrentCsv = false) {
     if (!window.showSaveFilePicker) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead."
+        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead.",
       );
       return;
     }
@@ -350,9 +353,9 @@
     const records = await loadRecords();
     const csv = buildCsv(records);
     console.info(
-      `[glitchwave-csv] Download command triggered (records=${Object.keys(
-        records
-      ).length || 0})`
+      `[glitchwave-csv] Download command triggered (records=${
+        Object.keys(records).length || 0
+      })`,
     );
     const filename = "glitchwave-games.csv";
     const blob = new Blob([csv], { type: "text/csv" });
@@ -363,7 +366,8 @@
     const attempts = [
       async () => {
         if (isFirefox) throw new Error("skip GM_download on Firefox");
-        if (typeof GM_download !== "function") throw new Error("GM_download missing");
+        if (typeof GM_download !== "function")
+          throw new Error("GM_download missing");
         await GM_download({ url: blobUrl, name: filename, saveAs: true });
         console.info("[glitchwave-csv] GM_download succeeded.");
       },
@@ -374,7 +378,11 @@
         anchor.style.display = "none";
         document.body.append(anchor);
         anchor.dispatchEvent(
-          new MouseEvent("click", { view: window, bubbles: true, cancelable: true })
+          new MouseEvent("click", {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+          }),
         );
         anchor.click();
         anchor.remove();
@@ -401,7 +409,7 @@
 
     if (!success) {
       alert(
-        "CSV download was blocked. Check popup/download permissions for this site and try again."
+        "CSV download was blocked. Check popup/download permissions for this site and try again.",
       );
     }
 
