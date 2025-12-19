@@ -42,7 +42,7 @@
     appendSuffixToLinks(suffixes, ".ui_button.btn_page_charts_common_charts");
     appendSuffixToLinks(
       suffixes,
-      '.page_charts_section_scope a[href*="/charts/top/album/"], .page_charts_section_scope a[href*="/charts/top/song/"]',
+      '.page_charts_section_scope a[href*="/charts/top/album/"], .page_charts_section_scope a[href*="/charts/top/song/"]'
     );
   }
 })();

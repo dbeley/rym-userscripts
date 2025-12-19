@@ -1,0 +1,15 @@
+{
+  "name": "rym-userscripts",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Helpful userscripts for rateyourmusic.com",
+  "scripts": {
+    "lint": "eslint --fix *.user.js",
+    "format": "prettier --write *.user.js *.js *.json *.md *.yaml *.yml",
+    "lint:check": "eslint *.user.js",
+    "format:check": "prettier --check *.user.js *.js *.json *.md *.yaml *.yml"
+  },
+  "author": "dbeley",
+  "license": "ISC",
+  "devDependencies": {}
+}

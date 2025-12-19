@@ -239,7 +239,7 @@
   // Function to handle Plain Text download button click
   function handleDownloadPlainTextClick() {
     console.log(
-      "Download Plain Text button clicked. Starting data extraction...",
+      "Download Plain Text button clicked. Starting data extraction..."
     );
 
     // Select all table rows with list items
@@ -300,7 +300,7 @@
         containerDiv.style.marginTop = "10px";
         navContainer.parentNode.insertBefore(
           containerDiv,
-          navContainer.nextSibling,
+          navContainer.nextSibling
         );
         navContainer = containerDiv;
       }

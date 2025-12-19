@@ -38,7 +38,7 @@
           await upsertRecord(record);
         }
         console.info(
-          `[rateyourmusic-csv] Recorded ${records.length} releases from chart page`,
+          `[rateyourmusic-csv] Recorded ${records.length} releases from chart page`
         );
         await writeCsvToDisk();
       }
@@ -51,14 +51,14 @@
 
     await upsertRecord(record);
     console.info(
-      `[rateyourmusic-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`,
+      `[rateyourmusic-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`
     );
     await writeCsvToDisk();
   }
 
   function extractReleaseRecord() {
     const release = document.querySelector(
-      '.release_page[itemtype="http://schema.org/MusicAlbum"]',
+      '.release_page[itemtype="http://schema.org/MusicAlbum"]'
     );
     if (!release) {
       console.warn("[rateyourmusic-csv] Release blob not found on page.");
@@ -68,16 +68,16 @@
     const metadata = collectAlbumInfo();
     const agg = release.querySelector('[itemprop="aggregateRating"]');
     const ratingValue = agg?.querySelector(
-      'meta[itemprop="ratingValue"]',
+      'meta[itemprop="ratingValue"]'
     )?.content;
     const ratingCount = agg?.querySelector(
-      'meta[itemprop="ratingCount"]',
+      'meta[itemprop="ratingCount"]'
     )?.content;
     const reviewCount = agg?.querySelector(
-      'meta[itemprop="reviewCount"]',
+      'meta[itemprop="reviewCount"]'
     )?.content;
     const maxRating = agg?.querySelector(
-      'meta[itemprop="bestRating"]',
+      'meta[itemprop="bestRating"]'
     )?.content;
 
     const name =
@@ -91,10 +91,10 @@
     const languages = metadata["Languages"] || "";
 
     const primaryGenres = extractList(
-      document.querySelectorAll(".release_pri_genres a.genre"),
+      document.querySelectorAll(".release_pri_genres a.genre")
     );
     const secondaryGenres = extractList(
-      document.querySelectorAll(".release_sec_genres a.genre"),
+      document.querySelectorAll(".release_sec_genres a.genre")
     );
     const descriptors = extractDescriptors();
 
@@ -138,13 +138,13 @@
 
   function extractChartRecords() {
     const chartItems = document.querySelectorAll(
-      ".page_charts_section_charts_item.object_release",
+      ".page_charts_section_charts_item.object_release"
     );
     const records = [];
 
     chartItems.forEach((item) => {
       const link = item.querySelector(
-        ".page_charts_section_charts_item_link.release",
+        ".page_charts_section_charts_item_link.release"
       );
       if (!link) return;
 
@@ -160,10 +160,10 @@
 
       // Extract artist
       const artistLink = item.querySelector(
-        ".page_charts_section_charts_item_credited_links_primary a.artist",
+        ".page_charts_section_charts_item_credited_links_primary a.artist"
       );
       const artistNameNode = artistLink?.querySelector(
-        ".ui_name_locale_original",
+        ".ui_name_locale_original"
       );
       const artist = artistNameNode
         ? artistNameNode.textContent.trim()
@@ -171,31 +171,31 @@
 
       // Extract release date
       const dateNode = item.querySelector(
-        ".page_charts_section_charts_item_date span",
+        ".page_charts_section_charts_item_date span"
       );
       const releaseDate = dateNode ? dateNode.textContent.trim() : "";
 
       // Extract type
       const typeNode = item.querySelector(
-        ".page_charts_section_charts_item_release_type",
+        ".page_charts_section_charts_item_release_type"
       );
       const type = typeNode ? typeNode.textContent.trim() : "";
 
       // Extract rating info
       const ratingNode = item.querySelector(
-        ".page_charts_section_charts_item_details_average_num",
+        ".page_charts_section_charts_item_details_average_num"
       );
       const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
 
       const ratingCountNode = item.querySelector(
-        ".page_charts_section_charts_item_details_ratings .abbr",
+        ".page_charts_section_charts_item_details_ratings .abbr"
       );
       const ratingCount = ratingCountNode
         ? ratingCountNode.textContent.trim()
         : "";
 
       const reviewCountNode = item.querySelector(
-        ".page_charts_section_charts_item_details_reviews .abbr",
+        ".page_charts_section_charts_item_details_reviews .abbr"
       );
       const reviewCount = reviewCountNode
         ? reviewCountNode.textContent.trim()
@@ -204,18 +204,18 @@
       // Extract genres
       const primaryGenres = extractList(
         item.querySelectorAll(
-          ".page_charts_section_charts_item_genres_primary a.genre",
-        ),
+          ".page_charts_section_charts_item_genres_primary a.genre"
+        )
       );
       const secondaryGenres = extractList(
         item.querySelectorAll(
-          ".page_charts_section_charts_item_genres_secondary a.genre",
-        ),
+          ".page_charts_section_charts_item_genres_secondary a.genre"
+        )
       );
 
       // Extract descriptors
       const descriptorNodes = item.querySelectorAll(
-        ".page_charts_section_charts_item_genre_descriptors .comma_separated",
+        ".page_charts_section_charts_item_genre_descriptors .comma_separated"
       );
       const descriptors = Array.from(descriptorNodes)
         .map((node) => node.textContent.trim())
@@ -224,7 +224,7 @@
 
       // Extract image
       const imgNode = item.querySelector(
-        ".page_charts_section_charts_item_image img",
+        ".page_charts_section_charts_item_image img"
       );
       const image = imgNode ? imgNode.src : "";
 
@@ -380,7 +380,7 @@
     const rows = Object.values(records)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) =>
-        headers.map((key) => escapeCsv(entry[key] ?? "")).join(","),
+        headers.map((key) => escapeCsv(entry[key] ?? "")).join(",")
       );
 
     return [headers.join(","), ...rows].join("\n");
@@ -401,7 +401,7 @@
 
     if (!handle) {
       console.info(
-        "[rateyourmusic-csv] Pick an output file via the menu to auto-save the CSV.",
+        "[rateyourmusic-csv] Pick an output file via the menu to auto-save the CSV."
       );
       return;
     }
@@ -409,7 +409,7 @@
     const permission = await ensurePermission(handle);
     if (permission !== "granted") {
       console.warn(
-        "[rateyourmusic-csv] File permission was denied. Re-select the output file.",
+        "[rateyourmusic-csv] File permission was denied. Re-select the output file."
       );
       return;
     }
@@ -440,7 +440,7 @@
   async function pickCsvFile(writeCurrentCsv = false) {
     if (!window.showSaveFilePicker) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead.",
+        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead."
       );
       return;
     }
@@ -467,7 +467,7 @@
     console.info(
       `[rateyourmusic-csv] Download command triggered (records=${
         Object.keys(records).length || 0
-      })`,
+      })`
     );
     const filename = "rateyourmusic-releases.csv";
     const blob = new Blob([csv], { type: "text/csv" });
@@ -494,7 +494,7 @@
             view: window,
             bubbles: true,
             cancelable: true,
-          }),
+          })
         );
         anchor.click();
         anchor.remove();
@@ -521,7 +521,7 @@
 
     if (!success) {
       alert(
-        "CSV download was blocked. Check popup/download permissions for this site and try again.",
+        "CSV download was blocked. Check popup/download permissions for this site and try again."
       );
     }
 

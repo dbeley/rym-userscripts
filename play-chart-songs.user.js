@@ -143,7 +143,7 @@
       window.open(
         targetUrl,
         CONFIG.youtube.openInNewTab ? "_blank" : "_self",
-        "noopener",
+        "noopener"
       );
     } finally {
       setButtonBusy(button, false);
@@ -183,7 +183,7 @@
     } catch (error) {
       console.warn(
         "[RYM Play Button] Unable to fetch first YouTube result:",
-        error,
+        error
       );
       return null;
     }

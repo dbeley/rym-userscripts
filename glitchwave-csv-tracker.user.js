@@ -38,7 +38,7 @@
           await upsertRecord(record);
         }
         console.info(
-          `[glitchwave-csv] Recorded ${records.length} games from chart page`,
+          `[glitchwave-csv] Recorded ${records.length} games from chart page`
         );
         await writeCsvToDisk();
       }
@@ -51,14 +51,14 @@
 
     await upsertRecord(record);
     console.info(
-      `[glitchwave-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`,
+      `[glitchwave-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`
     );
     await writeCsvToDisk();
   }
 
   function extractGameRecord() {
     const scriptNodes = Array.from(
-      document.querySelectorAll('script[type="application/ld+json"]'),
+      document.querySelectorAll('script[type="application/ld+json"]')
     );
 
     for (const node of scriptNodes) {
@@ -128,7 +128,7 @@
 
       // Extract rating info
       const ratingNode = container.querySelector(
-        ".chart_card_score .rating_number",
+        ".chart_card_score .rating_number"
       );
       const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
 
@@ -268,7 +268,7 @@
     const rows = Object.values(records)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) =>
-        headers.map((key) => escapeCsv(entry[key] ?? "")).join(","),
+        headers.map((key) => escapeCsv(entry[key] ?? "")).join(",")
       );
 
     return [headers.join(","), ...rows].join("\n");
@@ -289,7 +289,7 @@
 
     if (!handle) {
       console.info(
-        "[glitchwave-csv] Pick an output file via the menu to auto-save the CSV.",
+        "[glitchwave-csv] Pick an output file via the menu to auto-save the CSV."
       );
       return;
     }
@@ -297,7 +297,7 @@
     const permission = await ensurePermission(handle);
     if (permission !== "granted") {
       console.warn(
-        "[glitchwave-csv] File permission was denied. Re-select the output file.",
+        "[glitchwave-csv] File permission was denied. Re-select the output file."
       );
       return;
     }
@@ -328,7 +328,7 @@
   async function pickCsvFile(writeCurrentCsv = false) {
     if (!window.showSaveFilePicker) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead.",
+        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead."
       );
       return;
     }
@@ -355,7 +355,7 @@
     console.info(
       `[glitchwave-csv] Download command triggered (records=${
         Object.keys(records).length || 0
-      })`,
+      })`
     );
     const filename = "glitchwave-games.csv";
     const blob = new Blob([csv], { type: "text/csv" });
@@ -382,7 +382,7 @@
             view: window,
             bubbles: true,
             cancelable: true,
-          }),
+          })
         );
         anchor.click();
         anchor.remove();
@@ -409,7 +409,7 @@
 
     if (!success) {
       alert(
-        "CSV download was blocked. Check popup/download permissions for this site and try again.",
+        "CSV download was blocked. Check popup/download permissions for this site and try again."
       );
     }
 

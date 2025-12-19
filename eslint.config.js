@@ -1,20 +1,71 @@
 export default [
   {
+    ignores: [".direnv/**", "node_modules/**", "*.html", "*_files/**"],
+  },
+  {
+    files: ["*.user.js"],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: "module",
+      sourceType: "script",
       globals: {
         console: "readonly",
         document: "readonly",
         window: "readonly",
+        alert: "readonly",
+        location: "readonly",
+        navigator: "readonly",
+        setTimeout: "readonly",
+        setInterval: "readonly",
+        clearTimeout: "readonly",
+        clearInterval: "readonly",
+        GM: "readonly",
         GM_download: "readonly",
         GM_info: "readonly",
-        unsafeWindow: "readonly"
-      }
+        GM_getValue: "readonly",
+        GM_setValue: "readonly",
+        GM_registerMenuCommand: "readonly",
+        GM_xmlhttpRequest: "readonly",
+        unsafeWindow: "readonly",
+        HTMLElement: "readonly",
+        MutationObserver: "readonly",
+        URL: "readonly",
+        URLSearchParams: "readonly",
+        Blob: "readonly",
+        FileSystemWritableFileStream: "readonly",
+        indexedDB: "readonly",
+        IDBDatabase: "readonly",
+        MouseEvent: "readonly",
+        Date: "readonly",
+        String: "readonly",
+        Array: "readonly",
+        Object: "readonly",
+        Map: "readonly",
+        Promise: "readonly",
+        Set: "readonly",
+      },
+    },
+    rules: {
+      "no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrors: "none",
+        },
+      ],
+      "no-undef": "error",
+    },
+  },
+  {
+    files: ["*.js"],
+    ignores: ["*.user.js"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "module",
     },
     rules: {
       "no-unused-vars": "warn",
-      "no-undef": "error"
-    }
-  }
+      "no-undef": "error",
+    },
+  },
 ];

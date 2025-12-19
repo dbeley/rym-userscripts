@@ -38,7 +38,7 @@
           await upsertRecord(record);
         }
         console.info(
-          `[rateyourmusic-film-csv] Recorded ${records.length} films from chart page`,
+          `[rateyourmusic-film-csv] Recorded ${records.length} films from chart page`
         );
         await writeCsvToDisk();
       }
@@ -51,14 +51,14 @@
 
     await upsertRecord(record);
     console.info(
-      `[rateyourmusic-film-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`,
+      `[rateyourmusic-film-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`
     );
     await writeCsvToDisk();
   }
 
   function extractFilmRecord() {
     const film = document.querySelector(
-      '.release_page[itemtype="http://schema.org/Movie"]',
+      '.release_page[itemtype="http://schema.org/Movie"]'
     );
     if (!film) {
       console.warn("[rateyourmusic-film-csv] Film blob not found on page.");
@@ -68,16 +68,16 @@
     const metadata = collectFilmInfo();
     const agg = film.querySelector('[itemprop="aggregateRating"]');
     const ratingValue = agg?.querySelector(
-      'meta[itemprop="ratingValue"]',
+      'meta[itemprop="ratingValue"]'
     )?.content;
     const ratingCount = agg?.querySelector(
-      'meta[itemprop="ratingCount"]',
+      'meta[itemprop="ratingCount"]'
     )?.content;
     const reviewCount = agg?.querySelector(
-      'meta[itemprop="reviewCount"]',
+      'meta[itemprop="reviewCount"]'
     )?.content;
     const maxRating = agg?.querySelector(
-      'meta[itemprop="bestRating"]',
+      'meta[itemprop="bestRating"]'
     )?.content;
 
     const titleNode = document.querySelector(".film_title h1");
@@ -104,10 +104,10 @@
       .filter(Boolean)
       .join("; ");
     const primaryGenres = extractList(
-      document.querySelectorAll(".film_pri_genres a.film_genre"),
+      document.querySelectorAll(".film_pri_genres a.film_genre")
     );
     const secondaryGenres = extractList(
-      document.querySelectorAll(".film_sec_genres a.film_genre"),
+      document.querySelectorAll(".film_sec_genres a.film_genre")
     );
     const descriptors = metadata["Descriptors"] || "";
     const studios = metadata["Studios"] || "";
@@ -157,13 +157,13 @@
 
   function extractChartRecords() {
     const chartItems = document.querySelectorAll(
-      ".page_charts_section_charts_item.object_film",
+      ".page_charts_section_charts_item.object_film"
     );
     const records = [];
 
     chartItems.forEach((item) => {
       const link = item.querySelector(
-        ".page_charts_section_charts_item_link.film",
+        ".page_charts_section_charts_item_link.film"
       );
       if (!link) return;
 
@@ -177,10 +177,10 @@
       let altTitle = "";
       if (nameLocaleNode) {
         const langNode = nameLocaleNode.querySelector(
-          ".ui_name_locale_language",
+          ".ui_name_locale_language"
         );
         const origNode = nameLocaleNode.querySelector(
-          ".ui_name_locale_original",
+          ".ui_name_locale_original"
         );
         name = langNode
           ? langNode.textContent.trim()
@@ -200,25 +200,25 @@
 
       // Extract release date
       const dateNode = item.querySelector(
-        ".page_charts_section_charts_item_date span",
+        ".page_charts_section_charts_item_date span"
       );
       const releaseDate = dateNode ? dateNode.textContent.trim() : "";
 
       // Extract rating info
       const ratingNode = item.querySelector(
-        ".page_charts_section_charts_item_details_average_num",
+        ".page_charts_section_charts_item_details_average_num"
       );
       const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
 
       const ratingCountNode = item.querySelector(
-        ".page_charts_section_charts_item_details_ratings .abbr",
+        ".page_charts_section_charts_item_details_ratings .abbr"
       );
       const ratingCount = ratingCountNode
         ? ratingCountNode.textContent.trim()
         : "";
 
       const reviewCountNode = item.querySelector(
-        ".page_charts_section_charts_item_details_reviews .abbr",
+        ".page_charts_section_charts_item_details_reviews .abbr"
       );
       const reviewCount = reviewCountNode
         ? reviewCountNode.textContent.trim()
@@ -227,18 +227,18 @@
       // Extract genres
       const primaryGenres = extractList(
         item.querySelectorAll(
-          ".page_charts_section_charts_item_genres_primary a.genre",
-        ),
+          ".page_charts_section_charts_item_genres_primary a.genre"
+        )
       );
       const secondaryGenres = extractList(
         item.querySelectorAll(
-          ".page_charts_section_charts_item_genres_secondary a.genre",
-        ),
+          ".page_charts_section_charts_item_genres_secondary a.genre"
+        )
       );
 
       // Extract image
       const imgNode = item.querySelector(
-        ".page_charts_section_charts_item_image img",
+        ".page_charts_section_charts_item_image img"
       );
       const image = imgNode ? imgNode.src : "";
 
@@ -390,7 +390,7 @@
     const rows = Object.values(records)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) =>
-        headers.map((key) => escapeCsv(entry[key] ?? "")).join(","),
+        headers.map((key) => escapeCsv(entry[key] ?? "")).join(",")
       );
 
     return [headers.join(","), ...rows].join("\n");
@@ -411,7 +411,7 @@
 
     if (!handle) {
       console.info(
-        "[rateyourmusic-film-csv] Pick an output file via the menu to auto-save the CSV.",
+        "[rateyourmusic-film-csv] Pick an output file via the menu to auto-save the CSV."
       );
       return;
     }
@@ -419,7 +419,7 @@
     const permission = await ensurePermission(handle);
     if (permission !== "granted") {
       console.warn(
-        "[rateyourmusic-film-csv] File permission was denied. Re-select the output file.",
+        "[rateyourmusic-film-csv] File permission was denied. Re-select the output file."
       );
       return;
     }
@@ -450,7 +450,7 @@
   async function pickCsvFile(writeCurrentCsv = false) {
     if (!window.showSaveFilePicker) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead.",
+        "Your browser does not support the File System Access API. Use the 'Download CSV once' menu instead."
       );
       return;
     }
@@ -477,7 +477,7 @@
     console.info(
       `[rateyourmusic-film-csv] Download command triggered (records=${
         Object.keys(records).length || 0
-      })`,
+      })`
     );
     const filename = "rateyourmusic-films.csv";
     const blob = new Blob([csv], { type: "text/csv" });
@@ -504,12 +504,12 @@
             view: window,
             bubbles: true,
             cancelable: true,
-          }),
+          })
         );
         anchor.click();
         anchor.remove();
         console.info(
-          "[rateyourmusic-film-csv] Anchor click fallback attempted.",
+          "[rateyourmusic-film-csv] Anchor click fallback attempted."
         );
       },
       async () => {
@@ -533,7 +533,7 @@
 
     if (!success) {
       alert(
-        "CSV download was blocked. Check popup/download permissions for this site and try again.",
+        "CSV download was blocked. Check popup/download permissions for this site and try again."
       );
     }
 
@@ -547,7 +547,7 @@
     } catch (err) {
       console.error(
         "[rateyourmusic-film-csv] Unable to load stored handle",
-        err,
+        err
       );
       return null;
     }

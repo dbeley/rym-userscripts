@@ -37,7 +37,7 @@
           await upsertRecord(record);
         }
         console.info(
-          `[rateyourmusic-song-csv] Recorded ${records.length} songs from chart page`,
+          `[rateyourmusic-song-csv] Recorded ${records.length} songs from chart page`
         );
         await writeCsvToDisk();
       }
@@ -49,7 +49,7 @@
 
     await upsertRecord(record);
     console.info(
-      `[rateyourmusic-song-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`,
+      `[rateyourmusic-song-csv] Recorded ${record.name || "unknown"} (${record.slug}) updated at ${record.updatedAt}`
     );
     await writeCsvToDisk();
   }
@@ -58,7 +58,7 @@
     const name =
       document
         .querySelector(
-          ".page_song_header_main_info h1 .ui_name_locale_original",
+          ".page_song_header_main_info h1 .ui_name_locale_original"
         )
         ?.textContent?.trim() ||
       document.querySelector('meta[property="og:title"]')?.content?.trim() ||
@@ -69,7 +69,7 @@
     const artist =
       document
         .querySelector(
-          ".page_song_header_info_artist .artist .ui_name_locale_original",
+          ".page_song_header_info_artist .artist .ui_name_locale_original"
         )
         ?.textContent?.trim() ||
       document
@@ -78,7 +78,7 @@
       "";
 
     const albumLink = document.querySelector(
-      ".page_song_header_info_rest a.album",
+      ".page_song_header_info_rest a.album"
     );
     const album = albumLink?.textContent?.trim() || "";
     const albumUrl = albumLink
@@ -91,17 +91,17 @@
 
     const ratingValue = cleanNumber(
       document.querySelector(
-        ".page_section_main_info_music_rating_value_rating",
-      )?.textContent,
+        ".page_section_main_info_music_rating_value_rating"
+      )?.textContent
     );
     const ratingCount = cleanNumber(
       document.querySelector(
-        ".page_section_main_info_music_rating_value_number",
-      )?.textContent,
+        ".page_section_main_info_music_rating_value_number"
+      )?.textContent
     );
 
     const primaryGenres = extractList(
-      document.querySelectorAll(".page_song_header_info_genre a.genre"),
+      document.querySelectorAll(".page_song_header_info_genre a.genre")
     );
     const secondaryGenres = ""; // Secondary genres are not surfaced on song pages
     const descriptors = extractDescriptors();
@@ -118,7 +118,7 @@
 
     const url = new URL(
       document.querySelector('link[rel="canonical"]')?.href || location.href,
-      location.href,
+      location.href
     ).href;
     const slug = url.split("/").filter(Boolean).pop() || "song";
     const now = new Date().toISOString();
@@ -148,7 +148,7 @@
 
   function extractType() {
     const spans = document.querySelectorAll(
-      ".page_song_header_info_rest .pipe_separated",
+      ".page_song_header_info_rest .pipe_separated"
     );
     for (const span of spans) {
       const text = span.textContent.trim();
@@ -161,7 +161,7 @@
 
   function extractReleaseDate() {
     const spans = document.querySelectorAll(
-      ".page_song_header_info_rest .pipe_separated",
+      ".page_song_header_info_rest .pipe_separated"
     );
     for (const span of spans) {
       const text = span.textContent.trim();
@@ -173,7 +173,7 @@
 
   function extractRankInfo() {
     const rankLinks = document.querySelectorAll(
-      ".page_song_header_info_rest a",
+      ".page_song_header_info_rest a"
     );
     const ranks = Array.from(rankLinks)
       .map((link) => link.textContent.trim().replace(/\s+/g, " "))
@@ -183,7 +183,7 @@
 
   function extractDescriptors() {
     const descriptorEl = document.querySelector(
-      ".page_song_header_info_descriptors",
+      ".page_song_header_info_descriptors"
     );
     if (!descriptorEl) return "";
     return descriptorEl.textContent
@@ -203,13 +203,13 @@
 
   function extractChartRecords() {
     const chartItems = document.querySelectorAll(
-      ".page_charts_section_charts_item.object_song",
+      ".page_charts_section_charts_item.object_song"
     );
     const records = [];
 
     chartItems.forEach((item) => {
       const link = item.querySelector(
-        ".page_charts_section_charts_item_link.song",
+        ".page_charts_section_charts_item_link.song"
       );
       if (!link) return;
 
@@ -223,32 +223,32 @@
         : link.textContent.trim();
 
       const artistLink = item.querySelector(
-        ".page_charts_section_charts_item_credited_links_primary a.artist",
+        ".page_charts_section_charts_item_credited_links_primary a.artist"
       );
       const artistNameNode = artistLink?.querySelector(
-        ".ui_name_locale_original",
+        ".ui_name_locale_original"
       );
       const artist = artistNameNode
         ? artistNameNode.textContent.trim()
         : artistLink?.textContent.trim() || "";
 
       const dateNode = item.querySelector(
-        ".page_charts_section_charts_item_title_date_compact span",
+        ".page_charts_section_charts_item_title_date_compact span"
       );
       const releaseDate = dateNode ? dateNode.textContent.trim() : "";
 
       const typeNode = item.querySelector(
-        ".page_charts_section_charts_item_release_type",
+        ".page_charts_section_charts_item_release_type"
       );
       const type = (typeNode ? typeNode.textContent.trim() : "") || "Song";
 
       const ratingNode = item.querySelector(
-        ".page_charts_section_charts_item_details_average_num",
+        ".page_charts_section_charts_item_details_average_num"
       );
       const ratingValue = ratingNode ? ratingNode.textContent.trim() : "";
 
       const ratingCountNode = item.querySelector(
-        ".page_charts_section_charts_item_details_ratings .abbr",
+        ".page_charts_section_charts_item_details_ratings .abbr"
       );
       const ratingCount = ratingCountNode
         ? ratingCountNode.textContent.trim()
@@ -256,17 +256,17 @@
 
       const primaryGenres = extractList(
         item.querySelectorAll(
-          ".page_charts_section_charts_item_genres_primary a.genre",
-        ),
+          ".page_charts_section_charts_item_genres_primary a.genre"
+        )
       );
       const secondaryGenres = extractList(
         item.querySelectorAll(
-          ".page_charts_section_charts_item_genres_secondary a.genre",
-        ),
+          ".page_charts_section_charts_item_genres_secondary a.genre"
+        )
       );
 
       const imgNode = item.querySelector(
-        ".page_charts_section_charts_item_image img",
+        ".page_charts_section_charts_item_image img"
       );
       const image = imgNode ? imgNode.src : "";
 
@@ -382,7 +382,7 @@
     const rows = Object.values(records)
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((entry) =>
-        headers.map((key) => escapeCsv(entry[key] ?? "")).join(","),
+        headers.map((key) => escapeCsv(entry[key] ?? "")).join(",")
       );
 
     return [headers.join(","), ...rows].join("\n");
@@ -403,7 +403,7 @@
 
     if (!handle) {
       console.info(
-        "[rateyourmusic-song-csv] Pick an output file via the menu to auto-save the CSV.",
+        "[rateyourmusic-song-csv] Pick an output file via the menu to auto-save the CSV."
       );
       return;
     }
@@ -411,7 +411,7 @@
     const permission = await ensurePermission(handle);
     if (permission !== "granted") {
       console.warn(
-        "[rateyourmusic-song-csv] File permission was denied. Re-select the output file.",
+        "[rateyourmusic-song-csv] File permission was denied. Re-select the output file."
       );
       return;
     }
@@ -442,7 +442,7 @@
   async function pickCsvFile(writeCurrentCsv = false) {
     if (!window.showSaveFilePicker) {
       alert(
-        "Your browser does not support the File System Access API. Use the 'Download song CSV once' menu instead.",
+        "Your browser does not support the File System Access API. Use the 'Download song CSV once' menu instead."
       );
       return;
     }
@@ -467,7 +467,7 @@
     const records = await loadRecords();
     const csv = buildCsv(records);
     console.info(
-      `[rateyourmusic-song-csv] Download command triggered (records=${Object.keys(records).length || 0})`,
+      `[rateyourmusic-song-csv] Download command triggered (records=${Object.keys(records).length || 0})`
     );
     const filename = "rateyourmusic-songs.csv";
     const blob = new Blob([csv], { type: "text/csv" });
@@ -494,12 +494,12 @@
             view: window,
             bubbles: true,
             cancelable: true,
-          }),
+          })
         );
         anchor.click();
         anchor.remove();
         console.info(
-          "[rateyourmusic-song-csv] Anchor click fallback attempted.",
+          "[rateyourmusic-song-csv] Anchor click fallback attempted."
         );
       },
       async () => {
@@ -523,7 +523,7 @@
 
     if (!success) {
       alert(
-        "CSV download was blocked. Check popup/download permissions for this site and try again.",
+        "CSV download was blocked. Check popup/download permissions for this site and try again."
       );
     }
 
@@ -537,7 +537,7 @@
     } catch (err) {
       console.error(
         "[rateyourmusic-song-csv] Unable to load stored handle",
-        err,
+        err
       );
       return null;
     }
