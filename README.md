@@ -23,6 +23,8 @@ Helpful userscripts for rateyourmusic.com (RYM).
 | `rateyourmusic-film-csv-tracker.user.js` | Logs every RYM film page you visit into a separate local CSV (auto-save or manual download). | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-film-csv-tracker.user.js) |
 | `glitchwave-csv-tracker.user.js`         | Logs every Glitchwave game page you visit into a local CSV (auto-save or manual download).   | [Install](https://github.com/dbeley/rym-userscripts/raw/main/glitchwave-csv-tracker.user.js)         |
 
+The CSV tracker scripts have been enriched and extended into a dedicated browser add-on that also displays the ratings on supported websites, check out [comping](https://github.com/dbeley/comping)!
+
 ## Script details
 
 ### download-list.user.js
