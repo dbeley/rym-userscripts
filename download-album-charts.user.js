@@ -26,6 +26,34 @@
         return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
     }
 
+    function getChartInfo() {
+        const path = window.location.pathname;
+        const searchParams = new URLSearchParams(window.location.search);
+        
+        // Extract chart type (top, popular, esoteric, diverse)
+        const chartTypeMatch = path.match(/\/charts\/(top|popular|esoteric|diverse)\//);
+        const chartType = chartTypeMatch ? chartTypeMatch[1] : 'unknown';
+        
+        // Extract filters from URL path and query params
+        const filters = [];
+        
+        // Year filter
+        const yearMatch = path.match(/\/(\d{4})\/?/);
+        if (yearMatch) filters.push(yearMatch[1]);
+        
+        // Genre/descriptor from path
+        const pathParts = path.split('/').filter(p => p && !['charts', 'top', 'popular', 'esoteric', 'diverse', 'album'].includes(p) && !/^\d{4}$/.test(p));
+        filters.push(...pathParts);
+        
+        // Additional query parameters that might be useful
+        if (searchParams.has('page')) filters.push(`page${searchParams.get('page')}`);
+        
+        return {
+            type: chartType,
+            filters: filters.join('_')
+        };
+    }
+
     // Function to extract relevant information from each album div
     function extractInfo(div) {
         const info = {};
@@ -146,8 +174,12 @@
         // Generate timestamp
         const timestamp = getTimestamp();
 
+        // Get chart info for filename
+        const chartInfo = getChartInfo();
+        const chartPart = chartInfo.filters ? `${chartInfo.type}_${chartInfo.filters}` : chartInfo.type;
+
         // Generate filename with timestamp
-        const filename = `rym_album_charts_data_${timestamp}.csv`;
+        const filename = `rym_album_charts_${chartPart}_${timestamp}.csv`;
 
         // Download the CSV file
         downloadFile(csvData, filename, 'text/csv');
@@ -179,8 +211,12 @@
         // Generate timestamp
         const timestamp = getTimestamp();
 
+        // Get chart info for filename
+        const chartInfo = getChartInfo();
+        const chartPart = chartInfo.filters ? `${chartInfo.type}_${chartInfo.filters}` : chartInfo.type;
+
         // Generate filename with timestamp
-        const filename = `rym_album_charts_data_${timestamp}.txt`;
+        const filename = `rym_album_charts_${chartPart}_${timestamp}.txt`;
 
         // Download the text file
         downloadFile(plainTextData, filename, 'text/plain');
