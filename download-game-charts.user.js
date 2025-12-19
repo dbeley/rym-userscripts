@@ -79,61 +79,56 @@
 
     // Extract game title
     const titleElement = div.querySelector(
-      ".page_charts_section_charts_item_title .ui_name_locale_original, .page_charts_section_charts_item_title .ui_name_locale"
+      ".chart_card_title_line .chart_title a"
     );
     info.title = titleElement ? titleElement.textContent.trim() : "N/A";
 
-    // Extract developer(s)
-    const developerElement = div.querySelector(
-      ".page_charts_section_charts_item_credited_text .ui_name_locale_original, .page_charts_section_charts_item_credited_text .ui_name_locale"
-    );
-    info.developer = developerElement
-      ? developerElement.textContent.trim()
-      : "N/A";
+    // Extract developer(s) - not displayed in this chart layout
+    info.developer = "N/A";
 
     // Extract release date
-    const dateElement = div.querySelector(
-      ".page_charts_section_charts_item_title_date_compact span:first-child, .page_charts_section_charts_item_date"
-    );
+    const dateElement = div.querySelector(".chart_release_date");
     info.release_date = dateElement ? dateElement.textContent.trim() : "N/A";
 
     // Extract genres
-    const genreElements = div.querySelectorAll(
-      ".page_charts_section_charts_item_genres_primary a, .page_charts_section_charts_item_genres_secondary a"
-    );
+    const genreElements = div.querySelectorAll(".chart_genres a");
     info.genres = Array.from(genreElements)
       .map((genre) => genre.textContent.trim())
       .join(", ");
 
     // Extract average rating
-    const ratingElement = div.querySelector(
-      ".page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_average_num"
-    );
+    const ratingElement = div.querySelector(".rating_number");
     info.average_rating = ratingElement
       ? ratingElement.textContent.trim()
       : "N/A";
 
-    // Extract number of votes
-    const votesElement = div.querySelector(
-      ".page_charts_section_charts_item_stats_ratings .page_charts_section_charts_item_details_ratings .abbr"
-    );
-    info.number_of_votes = votesElement
-      ? votesElement.textContent.trim()
+    // Extract number of ratings
+    const ratingsElement = div.querySelector(".chart_card_ratings b");
+    info.number_of_votes = ratingsElement
+      ? ratingsElement.textContent.trim()
       : "N/A";
 
     // Extract number of reviews
-    const reviewsElement = div.querySelector(
-      ".page_charts_section_charts_item_details_reviews .abbr"
-    );
+    const reviewsElement = div.querySelector(".chart_card_reviews b");
     info.number_of_reviews = reviewsElement
       ? reviewsElement.textContent.trim()
       : "N/A";
 
     // Extract image URL
-    const imageElement = div.querySelector(
-      ".page_charts_section_charts_item_image img"
-    );
-    info.image_url = imageElement ? imageElement.src.trim() : "N/A";
+    const imageElement = div.querySelector(".chart_card_image");
+    if (imageElement) {
+      const bgUrl =
+        imageElement.style.background ||
+        imageElement.getAttribute("data-delayloadurl");
+      if (bgUrl) {
+        const urlMatch = bgUrl.match(/url\(['"](.*?)['"]\)/);
+        info.image_url = urlMatch ? urlMatch[1] : "N/A";
+      } else {
+        info.image_url = "N/A";
+      }
+    } else {
+      info.image_url = "N/A";
+    }
 
     return info;
   }
@@ -169,7 +164,7 @@
       return null;
     }
 
-    return data.map((item) => `${item.developer} - ${item.title}`).join("\n");
+    return data.map((item) => item.title).join("\n");
   }
 
   // Function to download a file
@@ -198,9 +193,7 @@
     console.log("Download CSV button clicked. Starting data extraction...");
 
     // Select all div elements with the relevant class
-    const divElements = document.querySelectorAll(
-      "div.page_charts_section_charts_item.object_game"
-    );
+    const divElements = document.querySelectorAll("div.chart_card");
 
     // Initialize an array to store the extracted information
     const extractedData = [];
@@ -241,9 +234,7 @@
     );
 
     // Select all div elements with the relevant class
-    const divElements = document.querySelectorAll(
-      "div.page_charts_section_charts_item.object_game"
-    );
+    const divElements = document.querySelectorAll("div.chart_card");
 
     // Initialize an array to store the extracted information
     const extractedData = [];
@@ -279,15 +270,20 @@
 
   // Function to create and insert the download buttons
   function addButtons() {
-    const navContainer = document.querySelector(
-      ".page_charts_section_charts_nav_view"
-    );
+    // Try multiple possible locations for button insertion
+    const navContainer =
+      document.querySelector(".page_chart_nav_top") ||
+      document.querySelector(".page_chart_header") ||
+      document.querySelector(".page_chart_main");
+
     if (
       navContainer &&
-      !navContainer.querySelector(".download-buttons-container")
+      !document.querySelector(".download-buttons-container")
     ) {
       const buttonContainer = document.createElement("div");
       buttonContainer.className = "download-buttons-container";
+      buttonContainer.style.marginTop = "10px";
+      buttonContainer.style.marginBottom = "10px";
 
       const csvButton = document.createElement("button");
       csvButton.textContent = "Download CSV";
@@ -315,6 +311,8 @@
       buttonContainer.appendChild(textButton);
       navContainer.appendChild(buttonContainer);
       console.log("Download buttons added to the page.");
+    } else if (!navContainer) {
+      console.log("Nav container not found. Page structure may have changed.");
     }
   }
 
