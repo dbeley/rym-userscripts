@@ -29,8 +29,7 @@
     chartItem: ".page_charts_section_charts_item.object_song",
     title:
       ".page_charts_section_charts_item_title .ui_name_locale_original, .page_charts_section_charts_item_title .ui_name_locale",
-    artist:
-      ".page_charts_section_charts_item_credited_text .ui_name_locale_original, .page_charts_section_charts_item_credited_text .ui_name_locale",
+    artist: ".page_charts_section_charts_item_credited_text a.artist",
     actionTarget: ".page_charts_section_charts_top_line_title_artist",
   };
 
@@ -120,10 +119,17 @@
 
   function extractSongData(item) {
     const titleElement = item.querySelector(SELECTORS.title);
-    const artistElement = item.querySelector(SELECTORS.artist);
+    const artistElements = item.querySelectorAll(SELECTORS.artist);
     return {
       title: titleElement ? sanitizeText(titleElement.textContent) : "",
-      artist: artistElement ? sanitizeText(artistElement.textContent) : "",
+      artist:
+        artistElements.length > 0
+          ? sanitizeText(
+              Array.from(artistElements)
+                .map((el) => el.textContent)
+                .join(" ")
+            )
+          : "",
     };
   }
 

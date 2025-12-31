@@ -81,11 +81,15 @@
     );
     info.title = titleElement ? titleElement.textContent.trim() : "N/A";
 
-    // Extract artist name
-    const artistElement = div.querySelector(
-      ".page_charts_section_charts_item_credited_text .ui_name_locale_original, .page_charts_section_charts_item_credited_text .ui_name_locale"
+    // Extract artist name(s)
+    const artistElements = div.querySelectorAll(
+      ".page_charts_section_charts_item_credited_text a.artist"
     );
-    info.artist = artistElement ? artistElement.textContent.trim() : "N/A";
+    info.artist =
+      Array.from(artistElements)
+        .map((el) => el.textContent.trim())
+        .join(" ")
+        .trim() || "N/A";
 
     // Extract release date
     const dateElement = div.querySelector(

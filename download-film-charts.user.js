@@ -83,12 +83,14 @@
     info.title = titleElement ? titleElement.textContent.trim() : "N/A";
 
     // Extract director(s)
-    const directorElement = div.querySelector(
-      ".page_charts_section_charts_item_credited_text .ui_name_locale_original, .page_charts_section_charts_item_credited_text .ui_name_locale"
+    const directorElements = div.querySelectorAll(
+      ".page_charts_section_charts_item_credited_text a.artist"
     );
-    info.director = directorElement
-      ? directorElement.textContent.trim()
-      : "N/A";
+    info.director =
+      Array.from(directorElements)
+        .map((el) => el.textContent.trim())
+        .join(" ")
+        .trim() || "N/A";
 
     // Extract release date
     const dateElement = div.querySelector(
