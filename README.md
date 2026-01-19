@@ -9,22 +9,23 @@ Helpful userscripts for rateyourmusic.com (RYM).
 
 ## Scripts at a glance
 
-| Script                                   | What it does                                                                | Install                                                                                              |
-| ---------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `download-list.user.js`                  | Adds CSV and plain-text download buttons to any user list.                  | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-list.user.js)                  |
-| `download-album-charts.user.js`          | Exports album charts (CSV/plain text).                                      | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-album-charts.user.js)          |
-| `download-song-charts.user.js`           | Exports song charts (CSV/plain text).                                       | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-song-charts.user.js)           |
-| `download-film-charts.user.js`           | Exports film charts (CSV/plain text).                                       | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-film-charts.user.js)           |
-| `download-game-charts.user.js`           | Exports video game charts from Glitchwave (CSV/plain text).                 | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-game-charts.user.js)           |
-| `play-chart-songs.user.js`               | Adds a play button that opens the first YouTube video for each chart entry. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/play-chart-songs.user.js)               |
-| `retain-filters-on-chart-links.user.js`  | Keeps your current genre/region filters when navigating chart links.        | [Install](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js)  |
-| `rateyourmusic-csv-tracker.user.js`      | Deprecated. Logs every RYM release page you visit into a local CSV.         | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-csv-tracker.user.js)      |
-| `rateyourmusic-song-csv-tracker.user.js` | Deprecated. Logs every RYM songs page you visit into a local CSV.           | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-song-csv-tracker.user.js) |
-| `rateyourmusic-film-csv-tracker.user.js` | Deprecated. Logs every RYM film page you visit into a separate local CSV.   | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-film-csv-tracker.user.js) |
-| `glitchwave-csv-tracker.user.js`         | Deprecated. Logs every Glitchwave game page you visit into a local CSV.     | [Install](https://github.com/dbeley/rym-userscripts/raw/main/glitchwave-csv-tracker.user.js)         |
+| Script                                   | What it does                                                                  | Install                                                                                              |
+| ---------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `download-list.user.js`                  | Adds CSV and plain-text download buttons to any user list.                    | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-list.user.js)                  |
+| `download-album-charts.user.js`          | Exports album charts (CSV/plain text).                                        | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-album-charts.user.js)          |
+| `download-song-charts.user.js`           | Exports song charts (CSV/plain text).                                         | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-song-charts.user.js)           |
+| `download-film-charts.user.js`           | Exports film charts (CSV/plain text).                                         | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-film-charts.user.js)           |
+| `download-game-charts.user.js`           | Exports video game charts from Glitchwave (CSV/plain text).                   | [Install](https://github.com/dbeley/rym-userscripts/raw/main/download-game-charts.user.js)           |
+| `play-chart-songs.user.js`               | Adds a play button that opens the first YouTube video for each chart entry.   | [Install](https://github.com/dbeley/rym-userscripts/raw/main/play-chart-songs.user.js)               |
+| `retain-filters-on-chart-links.user.js`  | Keeps your current genre/region filters when navigating chart links.          | [Install](https://github.com/dbeley/rym-userscripts/raw/main/retain-filters-on-chart-links.user.js)  |
+| `rateyourmusic-csv-tracker.user.js`      | **Deprecated**. Logs every RYM release page you visit into a local CSV.       | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-csv-tracker.user.js)      |
+| `rateyourmusic-song-csv-tracker.user.js` | **Deprecated**. Logs every RYM songs page you visit into a local CSV.         | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-song-csv-tracker.user.js) |
+| `rateyourmusic-film-csv-tracker.user.js` | **Deprecated**. Logs every RYM film page you visit into a separate local CSV. | [Install](https://github.com/dbeley/rym-userscripts/raw/main/rateyourmusic-film-csv-tracker.user.js) |
+| `glitchwave-csv-tracker.user.js`         | **Deprecated**. Logs every Glitchwave game page you visit into a local CSV.   | [Install](https://github.com/dbeley/rym-userscripts/raw/main/glitchwave-csv-tracker.user.js)         |
 
 > [!NOTE]
-> The CSV tracker scripts are still usable but are deprecated: they have been enriched and extended into a dedicated browser add-on that also displays the ratings on supported websites, check out [comping](https://github.com/dbeley/comping)!
+> The CSV tracker scripts are still usable but are **deprecated**.
+> They have been enriched and extended into a dedicated browser add-on that also displays the ratings on supported websites: check out [comping](https://github.com/dbeley/comping)!
 
 ## Script details
 
@@ -37,10 +38,10 @@ Helpful userscripts for rateyourmusic.com (RYM).
 
 ![Download songs list button screenshot](docs/userscript_buttons.png)
 
-- Adds CSV and text export buttons above the chart.
-- Includes artwork URLs, rating counts, genres, and release metadata. Cf. Sample Data section below.
+- Adds CSV and text export buttons above charts.
+- Includes artwork URLs, rating counts, genres, and release metadata. Cf. the [Sample Data](#sample-data) section below.
 - Tip: set RYM chart settings to show 100 rows per page to minimize paging.
-- Scroll to the bottom once to load the album covers before exporting, otherwise you may see blank image fields.
+- If you need all the album cover links don't forget to scroll to the bottom of the page to load them all.
 
 ### play-chart-songs.user.js
 
