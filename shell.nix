@@ -1,12 +1,13 @@
-{ pkgs ? import <nixpkgs> {} }:
+{
+  pkgs ? import <nixpkgs> { },
+}:
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
-    prek
     nodejs
-    nodePackages.npm
-    nodePackages.eslint
-    nodePackages.prettier
+    eslint
+    prettier
+    prek
   ];
 
   shellHook = ''
