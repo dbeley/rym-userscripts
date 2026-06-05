@@ -100,3 +100,18 @@ Helpful userscripts for rateyourmusic.com (RYM).
 | title                                | developer    | release_date | genres           | average_rating | number_of_votes | number_of_reviews | image_url                     |
 | ------------------------------------ | ------------ | ------------ | ---------------- | -------------- | --------------- | ----------------- | ----------------------------- |
 | The Legend of Zelda: Ocarina of Time | Nintendo EAD | 1998         | Action-Adventure | 4.18           | 15k             | 245               | https://e.snmc.io/i/300/w/... |
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request or open an issue for bugs, features, or documentation improvements.
+
+### Development
+
+1. Clone the repository
+2. Edit or create userscript files (`.user.js`)
+3. Test in your browser with a userscript manager
+4. Submit a Pull Request with your changes
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
